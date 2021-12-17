@@ -20,7 +20,7 @@ I found the very idea of mixing neural networks and genetic algorithms fascinati
  - I am using Visual Studio code for development, so I include the complete setup for it. Everything shall happen in a Docker container. The build is using CMake and Qt 5.12.8 for the UI implementation. I created a custom ubuntu qt image (artofimagination/qt-linux-compiler:v1.0.2_qt5.12.8) to supply Qt for the container. Hoping to upgrade it to more recent version.
  
  VS Code steps:
- - Install extensions Docker (Microsoft) and Remote-containers (Microsoft), C/C++ (Microsoft), CMake Tools (Microsoft), QML (Baptist Benoist)
+ - Install extensions Docker (Microsoft), Remote-containers (Microsoft), C/C++ (Microsoft), CMake Tools (Microsoft), QML (Baptist Benoist)
  - Click in the green area in the bottom left corner (Open a Remote Window)
  - Reopen in container (Select from Dockerfile)
  - Run ```xhost local:docker``` in the host command line

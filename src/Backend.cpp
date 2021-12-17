@@ -2,6 +2,7 @@
 
 #include "AlgorithmHelpers.h"
 #include "BasicTypes.h"
+#include "Challenges/iChallenges.h"
 #include "SensorsActions.h"
 
 #include <QColor>
@@ -46,18 +47,21 @@ void Backend::Run()
 
     unsigned generation = 0;
     m_xGenerationGenerator->initializeGeneration0(); // starting population
+    m_xGenerationGenerator->SetStartChallenge(static_cast<eChallenges>(parameters.challenge));
 
     while (!m_Stop)
     {
+        m_xGenerationGenerator->SetChallenge(static_cast<eChallenges>(parameters.challenge));
         while (!m_Stop && generation < parameters.maxGenerations) { // generation loop
             unsigned murderCount = 0; // for reporting purposes
             for (unsigned simStep = 0; simStep < parameters.stepsPerGeneration; ++simStep) {
 
                 // multithreaded loop: index 0 is reserved, start at 1
-    #pragma omp parallel for num_threads(p.numThreads) default(shared) firstprivate(randomUint) lastprivate(randomUint) schedule(auto)
-                for (unsigned indivIndex = 1; indivIndex <= parameters.population && !m_Stop; ++indivIndex) {
-                    if ((*m_xPeeps.get())[indivIndex].alive) {
-                        SimStepOnePeep((*m_xPeeps.get())[indivIndex], simStep);
+                auto& randomUint = *m_xRandomGenerator.get();
+    #pragma omp parallel for num_threads(parameters.numThreads) default(shared) firstprivate(randomUint) lastprivate(randomUint) schedule(auto)
+                for (unsigned peepIndex = 1; peepIndex <= parameters.population; ++peepIndex) {
+                    if ((*m_xPeeps.get())[peepIndex].alive) {
+                        SimStepOnePeep((*m_xPeeps.get())[peepIndex], simStep, randomUint);
                     }
                 }
                 // In single-thread mode: this executes deferred, queued deaths and movements,
@@ -82,10 +86,10 @@ void Backend::Run()
 }
 
 //---------------------------------------------------------------------------
-void Backend::SimStepOnePeep(Peep &peep, unsigned simStep)
+void Backend::SimStepOnePeep(Peep &peep, unsigned simStep, RandomUintGenerator& random)
 {
     ++peep.age; // for this implementation, tracks simStep
-    auto actionLevels = peep.feedForward(simStep, *m_xPeeps.get(), *m_xSignals.get(), *m_xRandomGenerator.get());
+    auto actionLevels = peep.feedForward(simStep, *m_xPeeps.get(), *m_xSignals.get(), random);
     executeActions(peep, actionLevels);
 }
 
@@ -93,28 +97,15 @@ void Backend::SimStepOnePeep(Peep &peep, unsigned simStep)
 void Backend::endOfSimStep(unsigned simStep, unsigned generation)
 {
     auto params = m_xParameterIO->GetParamRef();
-    if (params.challenge == CHALLENGE_RADIOACTIVE_WALLS) {
-        // During the first half of the generation, the west wall is radioactive,
-        // where X == 0. In the last half of the generation, the east wall is
-        // radioactive, where X = the area width - 1. There's an exponential
-        // falloff of the danger, falling off to zero at the arena half line.
-        int16_t radioactiveX = (simStep < params.stepsPerGeneration / 2) ? 0 : params.sizeX - 1;
-
-        for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
-            Peep &peep = (*m_xPeeps.get())[index];
-            int16_t distanceFromRadioactiveWall = std::abs(peep.loc.x - radioactiveX);
-            if (distanceFromRadioactiveWall < params.sizeX / 2) {
-                float chanceOfDeath = 1.0 / distanceFromRadioactiveWall;
-                if ((*m_xRandomGenerator.get())() / (float)RANDOM_UINT_MAX < chanceOfDeath) {
-                    m_xPeeps->queueForDeath(peep);
-                }
-            }
-        }
-    }
+    auto challenge = m_xGenerationGenerator->GetChallengeId();
+    auto pChallenge = m_xGenerationGenerator->GetChallenge();
+    auto settings = Challenges::Settings();
+    settings.simStep = simStep;
+    pChallenge->EvaluateAtEndOfSimStep(*m_xPeeps.get(), m_xParameterIO->GetParamRef(), *m_xGrid.get(), settings);
 
     // If the peep is touching any wall, we set its challengeFlag to true.
     // At the end of the generation, all those with the flag true will reproduce.
-    if (params.challenge == CHALLENGE_TOUCH_ANY_WALL) {
+    if (challenge == eChallenges::TouchAnyWall) {
         for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
             Peep &peep = (*m_xPeeps.get())[index];
             if (peep.loc.x == 0 || peep.loc.x == params.sizeX - 1
@@ -127,7 +118,7 @@ void Backend::endOfSimStep(unsigned simStep, unsigned generation)
     // If this challenge is enabled, the peep gets a bit set in their challengeBits
     // member if they are within a specified radius of a barrier center. They have to
     // visit the barriers in sequential order.
-    if (params.challenge == CHALLENGE_LOCATION_SEQUENCE) {
+    if (challenge == eChallenges::LocationSequence) {
         float radius = 9.0;
         for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
             Peep &peep = (*m_xPeeps.get())[index];
@@ -358,11 +349,10 @@ QColor ConvertUint8ToQColor(uint8_t c)
 //---------------------------------------------------------------------------
 ImageFrameData Backend::GetImageFrameData()
 {
-    ImageFrameData data;
-    m_Lock.lockForRead();
-    data = m_UIFrameData;
+    m_Lock.lockForWrite();
+    auto data = m_UIFrameData;
     m_Lock.unlock();
-    return m_UIFrameData;
+    return data;
 }
 
 //---------------------------------------------------------------------------
@@ -395,4 +385,16 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
     for (Coord loc : barrierLocs) {
         m_UIFrameData.barrierLocs.push_back(loc);
     }
+}
+
+//---------------------------------------------------------------------------
+eChallenges Backend::GetChallengeId() const
+{
+    return m_xGenerationGenerator->GetChallengeId();
+}
+
+//---------------------------------------------------------------------------
+Challenges::iChallenge* Backend::GetChallenge() const
+{
+    return m_xGenerationGenerator->GetChallenge();
 }

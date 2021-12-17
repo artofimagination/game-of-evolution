@@ -82,25 +82,25 @@ public:
     void printGenome() const;
 
     bool alive;
-    uint16_t index; // index into peeps[] container
-    Coord loc;   // refers to a location in grid[][]
+    uint16_t index;             //!< index into PeepsPool[] container
+    Coord loc;                  //!< refers to a location in grid[][]
     Coord birthLoc;
     unsigned age;
     Genetics::Genome genome;
-    Genetics::NeuralNet nnet;   // derived from .genome
-    float responsiveness;  // 0.0..1.0 (0 is like asleep)
-    unsigned oscPeriod; // 2..4*p.stepsPerGeneration (TBD, see executeActions())
-    unsigned longProbeDist; // distance for long forward probe for obstructions
-    Dir lastMoveDir;  // direction of last movement
-    unsigned challengeBits; // modified when the indiv accomplishes some task
+    Genetics::NeuralNet nnet;   //!< derived from .genome
+    float responsiveness;       //!< 0.0..1.0 (0 is like asleep)
+    unsigned oscPeriod;         //!< 2..4*p.stepsPerGeneration (TBD, see executeActions())
+    unsigned longProbeDist;     //!< distance for long forward probe for obstructions
+    Dir lastMoveDir;            //!< direction of last movement
+    unsigned challengeBits;     //!< modified when the peep accomplishes some task
 private:
-    // This structure is used while converting the connection list to a
-    // neural net. This helps us to find neurons that don't feed anything
-    // so that they can be removed along with all the connections that
-    // feed the useless neurons. We'll cull neurons with .numOutputs == 0
-    // or those that only feed themselves, i.e., .numSelfInputs == .numOutputs.
-    // Finally, we'll renumber the remaining neurons sequentially starting
-    // at zero using the .remappedNumber member.
+    //! This structure is used while converting the connection list to a
+    //! neural net. This helps us to find neurons that don't feed anything
+    //! so that they can be removed along with all the connections that
+    //! feed the useless neurons. We'll cull neurons with .numOutputs == 0
+    //! or those that only feed themselves, i.e., .numSelfInputs == .numOutputs.
+    //! Finally, we'll renumber the remaining neurons sequentially starting
+    //! at zero using the .remappedNumber member.
     struct Node {
         uint16_t remappedNumber;
         uint16_t numOutputs;

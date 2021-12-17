@@ -3,5 +3,7 @@
         <file>qml/main.qml</file>
         <file>qml/Canvas2DType.qml</file>
         <file>qml/Peep.qml</file>
+        <file>qml/Circle.qml</file>
+        <file>qml/Rect.qml</file>
     </qresource>
 </RCC>

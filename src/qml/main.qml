@@ -10,23 +10,76 @@ Rectangle {
     width: Screen.width
     height: Screen.height
     color: "darkgrey"
+    property var cTitleAreaWidth: 40
 
     property var backendEngine
 
     function updateCanvasSize(){
-        simulatorCanvas.width = backendEngine.GetFrameSize().width * backendInterface.UiScale()
-        simulatorCanvas.height = backendEngine.GetFrameSize().height * backendInterface.UiScale()
+        var scaledPeepRadius = simulatorCanvas.peepRadius * backendInterface.UiScale()
+        canvasRectangle.width = backendEngine.GetFrameSize().width * backendInterface.UiScale() + scaledPeepRadius
+        canvasRectangle.height = backendEngine.GetFrameSize().height * backendInterface.UiScale() + scaledPeepRadius
         simulatorCanvas.scaling = backendInterface.UiScale()
     }
 
+    function setChallengeItems(challengeId)
+    {
+        if (challengeId == Challenge.Altruism) {
+            var setup = backendInterface.GetAltruismSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.altruismCenter, setup.altruismColor, setup.altruismRadius)
+            simulatorCanvas.createCircleChallengeItem(setup.sacrificeCenter, setup.sacrificeColor, setup.sacrificeRadius)
+        } else if (challengeId == Challenge.AltruismSacrifice) {
+            var setup = backendInterface.GetAltruismSacrificeSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.altruismSacrificeCenter, setup.altruismSacrificeColor, setup.altruismSacrificeRadius)
+        } else if (challengeId == Challenge.Circle) {
+            var setup = backendInterface.GetCircleSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+        } else if (challengeId == Challenge.RightHalf) {
+            var setup = backendInterface.GetRightHalfSetup()
+            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+        } else if (challengeId == Challenge.RightQuarter) {
+            var setup = backendInterface.GetRightQuarterSetup()
+            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+        } else if (challengeId == Challenge.LeftEighth) {
+            var setup = backendInterface.GetLeftEighthSetup()
+            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+        } else if (challengeId == Challenge.NeighborCount) {
+            var setup = backendInterface.GetNeighborCountSetup()
+            simulatorCanvas.createBorders(setup.neighborCountBorders, 10, setup.neighborCountColor)
+        } else if (challengeId == Challenge.CenterWeighted) {
+            var setup = backendInterface.GetCenterWeightedSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+        } else if (challengeId == Challenge.CenterUnweighted) {
+            var setup = backendInterface.GetCenterUnweightedSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+        } else if (challengeId == Challenge.CenterSparsed) {
+            var setup = backendInterface.GetCenterSparsedSetup()
+            simulatorCanvas.createCircleChallengeItem(setup.centerSparsedCenter, setup.centerSparsedColor, setup.centerSparsedRadius)
+        } else if (challengeId == Challenge.Corner) {
+            var setup = backendInterface.GetCornerSetup()
+            for(var i = 0; i < setup.cornerCenters.length; i++){
+                simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
+            }
+        } else if (challengeId == Challenge.CornerWeighted) {
+            var setup = backendInterface.GetCornerSetup()
+            for(var i = 0; i < setup.cornerCenters.length; i++){
+                simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
+            }
+        } else if (challengeId == Challenge.RadioActiveWalls) {
+            var setup = backendInterface.GetRadioactiveWallSetup()
+            simulatorCanvas.setCanvasGradient(setup.border, setup.radioactiveColor, setup.distance)
+        }
+    }
+
     function updateUiData() {
-        var imageData = backendEngine.GetImageFrameData()
-        simulatorCanvas.peepsPositions = imageData.peepsPositions
-        simulatorCanvas.peepsColors = imageData.peepsColors
-        // simulatorCanvas.maxPopulation = imageData.maxPopulation
-        
+        simulatorCanvas.clear();
+        var challenge = backendInterface.GetChallengeId()
+        var imageData = backendInterface.GetImageFrameData()
+        simulatorCanvas.createPeeps(imageData.peepsPositions, imageData.peepsColors)
+        setChallengeItems(challenge)
+
         generation.text = "Generation " + imageData.generation
         simulationStep.text = "Sim step " + imageData.simStep
+        maxPopulation.text = "Max population " + imageData.maxPopulation 
     }
 
     QMLInterface{
@@ -49,33 +102,94 @@ Rectangle {
 
     Rectangle {
         id: simulatorWindow
-        y: titleText.y + titleText.font.pointSize + 40
+        y: titleText.y + titleText.font.pointSize + cTitleAreaWidth
         width: mainPage.width; height: mainPage.height - y
         color: "lightgray"
 
-        Text {
-          id: generation
-          anchors.horizontalCenter: parent.horizontalCenter
-          anchors.topMargin: 10
-          text: "Generation"
-          font.bold: true
-          font.pointSize: 12
+        Frame {
+            id: canvasRectangle
+            anchors.left: parent.left
+
+            Canvas2DType{
+                id: simulatorCanvas
+            }
         }
 
-        Text {
-          id: simulationStep
-          anchors.top: generation.bottom
-          anchors.horizontalCenter: parent.horizontalCenter
-          anchors.topMargin: 10
-          text: "Sim step"
-          font.bold: true
-          font.pointSize: 12
+        Frame {
+            id: detailsRectangle
+            anchors.left: canvasRectangle.right
+            anchors.top: simulatorWindow.top
+            anchors.leftMargin: 50
+            anchors.topMargin: 20
+            Column {
+                Text {
+                    id: details
+                    text: "Details:"
+                    font.bold: true
+                    font.pointSize: 14
+                }
+                Text {
+                    id: generation
+                    text: "Generation"
+                    font.pointSize: 12
+                }
+                Text {
+                    id: simulationStep
+                    text: "Sim step "
+                    font.pointSize: 12
+                }
+                Text {
+                    id: maxPopulation
+                    text: "Max population "
+                    font.pointSize: 12
+                }
+            }
         }
 
-        Canvas2DType{
-            id: simulatorCanvas
-            width: parent.width; height: parent.height      
-        }
+        // GridLayout {
+        //     id: mainAreaGrid
+        //     anchors.fill: parent
+        //     columns: 2
+        //     rows: 1
+
+
+
+        //     Rectangle {
+        //         id: detailsElement
+        //         Layout.fillHeight: true
+        //         Layout.fillWidth: true
+        //         Layout.column: 50
+        //         Layout.columnSpan: 1
+        //         Layout.row: 1
+        //         Layout.rowSpan: 1
+        //         color: simulatorWindow.color
+        //         Rectangle {
+        //             Text {
+        //                 id: generation
+        //                 text: "Generation"
+        //                 font.bold: true
+        //                 font.pointSize: 12
+        //             }
+        //         }
+
+        //         Rectangle {
+        //             Layout.fillHeight: true
+        //             Layout.fillWidth: true
+        //             Layout.column: 50
+        //             Layout.columnSpan: 1
+        //             Layout.row: 2
+        //             Layout.rowSpan: 1
+        //             color: simulatorWindow.color
+
+        //             Text {
+        //                 id: simulationStep
+        //                 text: "Sim step"
+        //                 font.bold: true
+        //                 font.pointSize: 12
+        //             }
+        //         }
+        //     }
+        //}
     }
 
     Button {

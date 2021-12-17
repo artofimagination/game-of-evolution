@@ -67,7 +67,7 @@ enum Sensor {
 // that are after NUM_ACTIONS will be disabled in the simulator.
 // If new items are added to this enum, also update the name functions
 // in analysis.cpp.
-// I means the action affects the individual internally (Indiv)
+// I means the action affects the peep internally (Peep)
 // W means the action also affects the environment (Peeps or Grid)
 enum Action {
     MOVE_X,                   // W +- X component of movement
@@ -86,7 +86,7 @@ enum Action {
     MOVE_LEFT,                // W
     MOVE_RIGHT,               // W
     MOVE_REVERSE,             // W
-    NUM_ACTIONS,       // <<----------------- END OF ACTIVE ACTIONS MARKER
+    NUM_ACTIONS,              // <<----------------- END OF ACTIVE ACTIONS MARKER
     KILL_FORWARD,             // W
 };
 

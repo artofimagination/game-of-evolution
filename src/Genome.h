@@ -15,12 +15,16 @@ constexpr uint8_t SENSOR = 1;  // always a source
 constexpr uint8_t ACTION = 1;  // always a sink
 constexpr uint8_t NEURON = 0;  // can be either a source or sink
 
-struct Gene 
-{ //__attribute__((packed)) Gene {
 
-    static constexpr float f1 = 8.0;
-    static constexpr float f2 = 64.0;
-    //float weightAsFloat() { return std::pow(weight / f1, 3.0) / f2; }
+//! Each gene specifies one synaptic connection in a neural net. Each
+//! connection has an input (source) which is either a sensor or another neuron.
+//! Each connection has an output, which is either an action or another neuron.
+//! Each connection has a floating point weight derived from a signed 16-bit
+//! value. The signed integer weight is scaled to a small range, then cubed
+//! to provide fine resolution near zero.
+struct __attribute__((packed)) Gene 
+{
+
     float weightAsFloat() const { return weight / 8192.0; }
     static int16_t makeRandomWeight(RandomUintGenerator& r) { return r(0, 0xefff) - 0x8000; }
 
@@ -85,7 +89,7 @@ void displaySampleGenomes(unsigned count, const PeepsPool& peeps, const Paramete
 float averageGenomeLength(const PeepsPool& peeps, RandomUintGenerator& random, const Parameters& params);
 
 //! returns 0.0..1.0
-//! Samples random pairs of individuals regardless if they are alive or not
+//! Samples random pairs of peeps regardless if they are alive or not
 float geneticDiversity(const PeepsPool& peeps, RandomUintGenerator& random, const Parameters& params);
 
 //! If the genome is longer than the prescribed length, and if it's longer

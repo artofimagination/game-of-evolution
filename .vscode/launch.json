@@ -26,6 +26,7 @@
         }
       ],
       "preLaunchTask": "Build app",
+      "visualizerFile": "/root/.vscode-server/data/User/workspaceStorage/92177fdfcde96cc1bbd287a3db5549e4/tonka3000.qtvsctools/qt.natvis.xml"
     }
   ]
 }

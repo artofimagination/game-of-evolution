@@ -12,7 +12,7 @@
 App::App(int argc, char *argv[])
     : QApplication(argc, argv)
 {
-    qmlRegisterType<QMLInterface>("backendGuiInterface", 1, 0, "QMLInterface");
+    qmlRegisterType<QML::QMLInterface>("backendGuiInterface", 1, 0, "QMLInterface");
     m_MainView.engine()->rootContext()->setContextProperty("_window", &m_MainView);
     m_MainView.setResizeMode(QQuickView::SizeRootObjectToView);
     m_MainView.setSource(QUrl("qrc:/qml/main.qml"));

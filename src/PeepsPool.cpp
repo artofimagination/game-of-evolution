@@ -1,4 +1,5 @@
 #include "PeepsPool.h"
+#include <iostream>
 
 //-------------------------------------------------------------------------
 PeepsPool::PeepsPool(Grid& grid)
@@ -11,9 +12,9 @@ PeepsPool::PeepsPool(Grid& grid)
 void PeepsPool::init(unsigned population, const Parameters& params)
 {
     // Index 0 is reserved, so add one:
-    for(auto i = 0; i < population + 1; ++i)
+    for(unsigned i = 0; i < population + 1; ++i)
     {
-        individuals.emplace_back(Peep(params, m_Grid));
+        peeps.emplace_back(Peep(params, m_Grid));
     }
 }
 
@@ -22,7 +23,8 @@ void PeepsPool::queueForDeath(const Peep &peep)
 {
     #pragma omp critical
     {
-        deathQueue.push_back(peep.index);
+        if (peep.alive)
+            deathQueue.push_back(peep.index);
     }
 }
 

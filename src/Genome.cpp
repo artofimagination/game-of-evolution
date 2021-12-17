@@ -97,8 +97,8 @@ float hammingDistanceBits(const Genome &genome1, const Genome &genome2)
 {
     assert(genome1.size() == genome2.size());
 
-    const unsigned int *p1 = (const unsigned int *)genome1.data();
-    const unsigned int *p2 = (const unsigned int *)genome2.data();
+    const char* p1 = (const char*)genome1.data();
+    const char* p2 = (const char*)genome2.data();
     const unsigned numElements = genome1.size();
     const unsigned bytesPerElement = sizeof(genome1[0]);
     const unsigned lengthBytes = numElements * bytesPerElement;
@@ -123,8 +123,8 @@ float hammingDistanceBytes(const Genome &genome1, const Genome &genome2)
 {
     assert(genome1.size() == genome2.size());
 
-    const unsigned int *p1 = (const unsigned int *)genome1.data();
-    const unsigned int *p2 = (const unsigned int *)genome2.data();
+    const char* p1 = (const char*)genome1.data();
+    const char* p2 = (const char*)genome2.data();
     const unsigned numElements = genome1.size();
     const unsigned bytesPerElement = sizeof(genome1[0]);
     const unsigned lengthBytes = numElements * bytesPerElement;

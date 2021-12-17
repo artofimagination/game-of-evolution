@@ -1,7 +1,7 @@
 import QtQuick 2.0
 
 Component{
-    id: peepComponent
+    id: circleComponent
     Item{
         id: circleItem
         property var radius : 1

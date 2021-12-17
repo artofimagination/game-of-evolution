@@ -227,10 +227,9 @@ std::array<float, SensorsActions::Action::NUM_ACTIONS> Peep::feedForward(unsigne
     // Connections were ordered at birth so that all connections to neurons get
     // processed here before any connections to actions. As soon as we encounter the
     // first connection to an action, we'll pass all the neuron input accumulators
-    // through a transfer function and update the neuron outputs in the indiv,
+    // through a transfer function and update the neuron outputs in the peep,
     // except for undriven neurons which act as bias feeds and don't change. The
     // transfer function will leave each neuron's output in the range -1.0..1.0.
-
     bool neuronOutputsComputed = false;
     for (auto& conn : nnet.connections) {
         if (conn.sinkType == Genetics::ACTION && !neuronOutputsComputed) {

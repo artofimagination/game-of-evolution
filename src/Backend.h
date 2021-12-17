@@ -38,7 +38,6 @@ public:
 class Backend : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ImageFrameData imageData READ GetImageFrameData)
 public:
 
     Backend();
@@ -47,6 +46,12 @@ public:
 
     //! Stops the work.
     Q_INVOKABLE void Stop() { m_Stop = true; }
+
+    //! Returns the current challenge id.
+    eChallenges GetChallengeId() const;
+
+    //! Returns the current challenge.
+    Challenges::iChallenge* GetChallenge() const;
 
 signals:
     void ParametersUpdated();
@@ -72,7 +77,7 @@ private:
         grid - read-only
         signals - (pheromones) read-write for the location where our agent lives
             using signals.increment(), read-only for other locations
-        peeps - for other individuals, we can only read their index and genome.
+        peeps - for other peeps, we can only read their index and genome.
             We have read-write access to our individual through the indiv argument.
 
     The other important variables are:
@@ -81,7 +86,7 @@ private:
             For many simulation scenarios, this matches our indiv.age member.
         randomUint - global random number generator, a private instance is given to each thread
     **********************************************************************************************/
-    void SimStepOnePeep(Peep &indiv, unsigned simStep);
+    void SimStepOnePeep(Peep &indiv, unsigned simStep, RandomUintGenerator& random);
 
     /*
     At the end of each sim step, this function is called in single-thread
@@ -108,7 +113,7 @@ private:
     step (simStep). After evaluating the action neuron outputs, this function is
     called to execute the actions according to their output levels. This function is
     called in multi-threaded mode and operates on a single individual while other
-    threads are doing to the same to other individuals.
+    threads are doing to the same to other peeps.
 
     Action (their output) values arrive here as floating point values of arbitrary
     range (because they are the raw sums of zero or more weighted inputs) and will
@@ -131,7 +136,7 @@ private:
             peeps.queueForDeath()
 
     The deferred movement and death queues will be emptied by the caller at the end of the
-    simulator step by endOfSimStep() in a single thread after all individuals have been
+    simulator step by endOfSimStep() in a single thread after all peeps have been
     evaluated multithreadedly.
     **********************************************************************************/
     void executeActions(Peep &peep, std::array<float, SensorsActions::Action::NUM_ACTIONS> &actionLevels);
@@ -150,5 +155,3 @@ private:
     std::unique_ptr<PeepsPool> m_xPeeps{};
     std::unique_ptr<GenerationGenerator> m_xGenerationGenerator{};
 };
-
-Q_DECLARE_METATYPE(ImageFrameData)
