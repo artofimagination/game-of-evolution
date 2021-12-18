@@ -34,6 +34,10 @@ public:
     Q_INVOKABLE unsigned GetChallengeId();
     Q_INVOKABLE QML::AltruismSetup GetAltruismSetup();
     Q_INVOKABLE QML::CircleSetup GetCircleSetup();
+    Q_INVOKABLE QML::AnyWallSetup GetAgainstAnyWallSetup();
+    Q_INVOKABLE QML::DoubleRectangleSetup GetEastWestEighthsSetup();
+    Q_INVOKABLE QML::AnyWallSetup GetTouchAnyWallSetup();
+    Q_INVOKABLE QML::PairsSetup GetPairsSetup();
     Q_INVOKABLE QML::CircleSetup GetCenterWeightedSetup();
     Q_INVOKABLE QML::CenterSparsedSetup GetCenterSparsedSetup();
     Q_INVOKABLE QML::CornerSetup GetCornerSetup();

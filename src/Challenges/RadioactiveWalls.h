@@ -21,6 +21,7 @@ public:
 
     RadioactiveWalls(const Parameters& params, RandomUintGenerator& random);
 
+    //! \copydoc iChallenge::EvaluateAtEndOfSimStep
     void EvaluateAtEndOfSimStep(
         PeepsPool& peeps,
         const Parameters&,
@@ -28,7 +29,7 @@ public:
         const Settings& settings) override;
 
     //! \copydoc iChallenge::PassedCriteria
-    std::pair<bool, float> PassedCriteria(const Peep&, const Parameters&, const Grid&) override { return {false, 0.0}; };
+    std::pair<bool, float> PassedCriteria(const Peep&, const Parameters&, const Grid&) override;
 
     const Setup& GetSetup() const { return m_Setup; }
 

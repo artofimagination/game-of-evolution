@@ -52,6 +52,10 @@
       "list": "cpp",
       "map": "cpp",
       "cstring": "cpp",
-      "iomanip": "cpp"
+      "iomanip": "cpp",
+      "complex": "cpp",
+      "condition_variable": "cpp",
+      "mutex": "cpp",
+      "thread": "cpp"
     }
 }

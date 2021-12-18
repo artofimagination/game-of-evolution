@@ -97,42 +97,10 @@ void Backend::SimStepOnePeep(Peep &peep, unsigned simStep, RandomUintGenerator& 
 void Backend::endOfSimStep(unsigned simStep, unsigned generation)
 {
     auto params = m_xParameterIO->GetParamRef();
-    auto challenge = m_xGenerationGenerator->GetChallengeId();
     auto pChallenge = m_xGenerationGenerator->GetChallenge();
     auto settings = Challenges::Settings();
     settings.simStep = simStep;
     pChallenge->EvaluateAtEndOfSimStep(*m_xPeeps.get(), m_xParameterIO->GetParamRef(), *m_xGrid.get(), settings);
-
-    // If the peep is touching any wall, we set its challengeFlag to true.
-    // At the end of the generation, all those with the flag true will reproduce.
-    if (challenge == eChallenges::TouchAnyWall) {
-        for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
-            Peep &peep = (*m_xPeeps.get())[index];
-            if (peep.loc.x == 0 || peep.loc.x == params.sizeX - 1
-             || peep.loc.y == 0 || peep.loc.y == params.sizeY - 1) {
-                peep.challengeBits = true;
-            }
-        }
-    }
-
-    // If this challenge is enabled, the peep gets a bit set in their challengeBits
-    // member if they are within a specified radius of a barrier center. They have to
-    // visit the barriers in sequential order.
-    if (challenge == eChallenges::LocationSequence) {
-        float radius = 9.0;
-        for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
-            Peep &peep = (*m_xPeeps.get())[index];
-            for (unsigned n = 0; n < m_xGrid->getBarrierCenters().size(); ++n) {
-                unsigned bit = 1 << n;
-                if ((peep.challengeBits & bit) == 0) {
-                    if ((peep.loc - m_xGrid->getBarrierCenters()[n]).length() <= radius) {
-                        peep.challengeBits |= bit;
-                    }
-                    break;
-                }
-            }
-        }
-    }
 
     m_xPeeps->drainDeathQueue();
     m_xPeeps->drainMoveQueue();
@@ -223,10 +191,8 @@ void Backend::executeActions(Peep &peep, std::array<float, SensorsActions::Actio
             Coord otherLoc = peep.loc + peep.lastMoveDir;
             if (m_xGrid->isInBounds(otherLoc) && m_xGrid->isOccupiedAt(otherLoc)) {
                 Peep &peep2 = m_xPeeps->getPeep(otherLoc);
-                if (peep2.alive) {
-                    assert((peep.loc - peep2.loc).length() == 1);
-                    m_xPeeps->queueForDeath(peep2);
-                }
+                assert((peep.loc - peep2.loc).length() == 1);
+                m_xPeeps->queueForDeath(peep2);
             }
         }
     }
@@ -378,12 +344,11 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
                 m_UIFrameData.peepsColors.append(ConvertUint8ToQColor(Genetics::makeGeneticColor(peep.genome)));
             }
         }
+        auto const &barrierLocs = m_xGrid->getBarrierLocations();
+        for (Coord loc : barrierLocs) {
+            m_UIFrameData.barrierLocs.append(QPoint(loc.x, loc.y));
+        }
         m_Lock.unlock();
-    }
-
-    auto const &barrierLocs = m_xGrid->getBarrierLocations();
-    for (Coord loc : barrierLocs) {
-        m_UIFrameData.barrierLocs.push_back(loc);
     }
 }
 

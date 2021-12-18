@@ -32,7 +32,7 @@ public:
         RadioActiveWalls,
         AgainstAnyWall,
         TouchAnyWall,
-        EastWestEights,
+        EastWestEighths,
         NearBarrier,
         Pairs,
         LocationSequence,
@@ -86,6 +86,18 @@ public:
     Q_PROPERTY(QColor rectColor MEMBER color)
 };
 
+struct DoubleRectangleSetup
+{
+    Q_GADGET
+public:
+    QRect rectLeft{};
+    QRect rectRight{};
+    QColor color{};
+    Q_PROPERTY(QRect rectLeft MEMBER rectLeft)
+    Q_PROPERTY(QColor doubleRectColor MEMBER color)
+    Q_PROPERTY(QRect rectRight MEMBER rectRight)
+};
+
 struct NeighborCountSetup
 {
     Q_GADGET
@@ -94,6 +106,26 @@ public:
     QColor color{};
     Q_PROPERTY(QVariantList neighborCountBorders MEMBER borders)
     Q_PROPERTY(QColor neighborCountColor MEMBER color)
+};
+
+struct PairsSetup
+{
+    Q_GADGET
+public:
+    QVariantList borders{};
+    QColor color{};
+    Q_PROPERTY(QVariantList pairsBorders MEMBER borders)
+    Q_PROPERTY(QColor pairsColor MEMBER color)
+};
+
+struct AnyWallSetup
+{
+    Q_GADGET
+public:
+    QVariantList borders{};
+    QColor color{};
+    Q_PROPERTY(QVariantList anyWallBorders MEMBER borders)
+    Q_PROPERTY(QColor anyWallColor MEMBER color)
 };
 
 struct CenterSparsedSetup

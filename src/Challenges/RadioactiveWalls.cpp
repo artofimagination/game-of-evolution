@@ -18,6 +18,15 @@ RadioactiveWalls::RadioactiveWalls(const Parameters& params, RandomUintGenerator
 }
 
 //-------------------------------------------------------------------------
+std::pair<bool, float> RadioactiveWalls::PassedCriteria(const Peep& peep, const Parameters&, const Grid&)
+{ 
+    if (!peep.alive)
+        return { false, 0.0 };
+
+    return {true, 1.0};
+};
+
+//-------------------------------------------------------------------------
 void RadioactiveWalls::EvaluateAtEndOfSimStep(
     PeepsPool& peeps,
     const Parameters& params,

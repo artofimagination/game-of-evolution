@@ -1,6 +1,7 @@
 #include "QMLInterface.h"
 
 #include "Backend.h"
+#include "Challenges/AgainstAnyWall.h"
 #include "Challenges/Altruism.h"
 #include "Challenges/AltruismSacrifice.h"
 #include "Challenges/CenterSparsed.h"
@@ -9,12 +10,15 @@
 #include "Challenges/Circle.h"
 #include "Challenges/Corner.h"
 #include "Challenges/CornerWeighted.h"
+#include "Challenges/EastWestEighths.h"
 #include "Challenges/iChallenges.h"
 #include "Challenges/LeftEighth.h"
+#include "Challenges/NeighborCount.h"
+#include "Challenges/Pairs.h"
 #include "Challenges/RightHalf.h"
 #include "Challenges/RightQuarter.h"
 #include "Challenges/RadioactiveWalls.h"
-#include "Challenges/NeighborCount.h"
+#include "Challenges/TouchAnyWall.h"
 
 #include <iostream>
 
@@ -29,7 +33,10 @@ QObject* QMLInterface::StartBackend()
     qRegisterMetaType<QML::AltruismSetup>("AltruismSetup");
     qRegisterMetaType<QML::CircleSetup>("CircleSetup");
     qRegisterMetaType<QML::CornerSetup>("CornerSetup");
+    qRegisterMetaType<QML::AnyWallSetup>("AnyWallSetup");
+    qRegisterMetaType<QML::PairsSetup>("PairsSetup");
     qRegisterMetaType<QML::RectangleSetup>("RectangleSetup");
+    qRegisterMetaType<QML::DoubleRectangleSetup>("DoubleRectangleSetup");
     qRegisterMetaType<QML::RadioactiveWallSetup>("RadioactiveWallSetup");
     qRegisterMetaType<QML::CenterSparsedSetup>("CenterSparsedSetup");
     qRegisterMetaType<QML::NeighborCountSetup>("NeighborCountSetup");
@@ -82,6 +89,68 @@ QML::RectangleSetup QMLInterface::GetRightHalfSetup()
     QML::RectangleSetup setup;
     setup.color = QColor(0, 255, 0, 50);
     setup.rect = QRect(setupInternal.topLeft.x, setupInternal.topLeft.y, setupInternal.width, setupInternal.height);
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::PairsSetup QMLInterface::GetPairsSetup()
+{
+    m_Mutex.lock();
+    auto pChallenge = m_pBackendWorker->GetChallenge();
+    auto setupInternal = static_cast<Challenges::Pairs*>(pChallenge)->GetSetup();
+    m_Mutex.unlock();
+    QML::PairsSetup setup;
+    setup.color = QColor(255, 0, 0, 50);
+    for (auto border : setupInternal.borders)
+    {
+        setup.borders.push_back(border);
+    }
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::DoubleRectangleSetup QMLInterface::GetEastWestEighthsSetup()
+{
+    m_Mutex.lock();
+    auto pChallenge = m_pBackendWorker->GetChallenge();
+    auto setupInternal = static_cast<Challenges::EastWestEighths*>(pChallenge)->GetSetup();
+    m_Mutex.unlock();
+    QML::DoubleRectangleSetup setup;
+    setup.color = QColor(0, 255, 0, 50);
+    setup.rectLeft = QRect(setupInternal.eastTopLeft.x, setupInternal.eastTopLeft.y, setupInternal.width, setupInternal.height);
+    setup.rectRight = QRect(setupInternal.westTopLeft.x, setupInternal.westTopLeft.y, setupInternal.width, setupInternal.height);
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::AnyWallSetup QMLInterface::GetTouchAnyWallSetup()
+{
+    m_Mutex.lock();
+    auto pChallenge = m_pBackendWorker->GetChallenge();
+    auto setupInternal = static_cast<Challenges::TouchAnyWall*>(pChallenge)->GetSetup();
+    m_Mutex.unlock();
+    QML::AnyWallSetup setup;
+    setup.color = QColor(0, 255, 0, 50);
+    for (auto border : setupInternal.borders)
+    {
+        setup.borders.push_back(border);
+    }
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::AnyWallSetup QMLInterface::GetAgainstAnyWallSetup()
+{
+    m_Mutex.lock();
+    auto pChallenge = m_pBackendWorker->GetChallenge();
+    auto setupInternal = static_cast<Challenges::AgainstAnyWall*>(pChallenge)->GetSetup();
+    m_Mutex.unlock();
+    QML::AnyWallSetup setup;
+    setup.color = QColor(0, 255, 0, 50);
+    for (auto border : setupInternal.borders)
+    {
+        setup.borders.push_back(border);
+    }
     return setup;
 }
 

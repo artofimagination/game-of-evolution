@@ -25,13 +25,14 @@ public:
     unsigned generation;
     QVariantList peepsPositions{};
     QVariantList peepsColors{};
-    std::vector<Coord> barrierLocs;
+    QVariantList barrierLocs;
     typedef std::vector<std::vector<uint8_t>> SignalLayer;  // [x][y]
     std::vector<SignalLayer> signalLayers; // [layer][x][y]
     Q_PROPERTY(unsigned maxPopulation MEMBER maxPopulation)
     Q_PROPERTY(unsigned simStep MEMBER simStep)
     Q_PROPERTY(unsigned generation MEMBER generation)
     Q_PROPERTY(QVariantList peepsPositions MEMBER peepsPositions)
+    Q_PROPERTY(QVariantList barrierLocs MEMBER barrierLocs)
     Q_PROPERTY(QVariantList peepsColors MEMBER peepsColors)
 };
 

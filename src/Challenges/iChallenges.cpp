@@ -1,5 +1,6 @@
 #include "iChallenges.h"
 
+#include "Challenges/AgainstAnyWall.h"
 #include "Challenges/Altruism.h"
 #include "Challenges/AltruismSacrifice.h"
 #include "Challenges/CenterSparsed.h"
@@ -8,12 +9,18 @@
 #include "Challenges/Circle.h"
 #include "Challenges/Corner.h"
 #include "Challenges/CornerWeighted.h"
+#include "Challenges/EastWestEighths.h"
 #include "Challenges/iChallenges.h"
 #include "Challenges/LeftEighth.h"
+#include "Challenges/LocationSequence.h"
+#include "Challenges/MigrateDistance.h"
+#include "Challenges/NearBarrier.h"
+#include "Challenges/NeighborCount.h"
+#include "Challenges/Pairs.h"
 #include "Challenges/RightHalf.h"
 #include "Challenges/RightQuarter.h"
 #include "Challenges/RadioactiveWalls.h"
-#include "Challenges/NeighborCount.h"
+#include "Challenges/TouchAnyWall.h"
 #include "Parameters.h"
 #include "Peep.h"
 #include "PeepsPool.h"
@@ -95,41 +102,34 @@ iChallenge* CreateChallenge(
         // end of a generation. All remaining alive become parents.
         case eChallenges::RadioActiveWalls:
             return new RadioactiveWalls(params, random);
-
         // Survivors are those touching any wall at the end of the generation
         case eChallenges::AgainstAnyWall:
-            break;
-
+            return new AgainstAnyWall(params);
         // This challenge is partially handled in endOfSimStep(), where peeps
         // that are touching a wall are flagged in their Peep record. They are
         // allowed to continue living. Here at the end of the generation, any that
         // never touch a wall will die. All that touched a wall at any time during
         // their life will become parents.
         case eChallenges::TouchAnyWall:
-            break;
+            return new TouchAnyWall(params);
         // Everybody survives and are candidate parents, but scored by how far
         // they migrated from their birth location.
         case eChallenges::MigrateDistance:
-            break;
-
+            return new MigrateDistance(params);
         // Survivors are all those on the left or right eighths of the arena
-        case eChallenges::EastWestEights:
-            break;
-
+        case eChallenges::EastWestEighths:
+            return new EastWestEighths(params);
         // Survivors are those within radius of any barrier center. Weighted by distance.
         case eChallenges::NearBarrier:
-            break;
-
+            return new NearBarrier(params);
         // Survivors are those not touching a border and with exactly one neighbor which has no other neighbor
         case eChallenges::Pairs:
-            break;
-
+            return new Pairs(params);
         // Survivors are those that contacted one or more specified locations in a sequence,
         // ranked by the number of locations contacted. There will be a bit set in their
         // challengeBits member for each location contacted.
         case eChallenges::LocationSequence:
-            break;
-
+            return new LocationSequence(params);
         // Survivors are all those within the specified radius of the NE corner
         case eChallenges::AltruismSacrifice:
             return new AltruismSacrifice(params);

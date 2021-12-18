@@ -28,7 +28,7 @@ enum class eChallenges : uint16_t
     RadioActiveWalls,
     AgainstAnyWall,
     TouchAnyWall,
-    EastWestEights,
+    EastWestEighths,
     NearBarrier,
     Pairs,
     LocationSequence,

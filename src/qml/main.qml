@@ -67,6 +67,19 @@ Rectangle {
         } else if (challengeId == Challenge.RadioActiveWalls) {
             var setup = backendInterface.GetRadioactiveWallSetup()
             simulatorCanvas.setCanvasGradient(setup.border, setup.radioactiveColor, setup.distance)
+        } else if (challengeId == Challenge.TouchAnyWall) {
+            var setup = backendInterface.GetTouchAnyWallSetup()
+            simulatorCanvas.createBorders(setup.anyWallBorders, 10, setup.anyWallColor)
+        } else if (challengeId == Challenge.AgainstAnyWall) {
+            var setup = backendInterface.GetAgainstAnyWallSetup()
+            simulatorCanvas.createBorders(setup.anyWallBorders, 10, setup.anyWallColor)
+        } else if (challengeId == Challenge.EastWestEighths) {
+            var setup = backendInterface.GetEastWestEighthsSetup()
+            simulatorCanvas.createRectChallengeItem(setup.rectLeft, setup.doubleRectColor)
+            simulatorCanvas.createRectChallengeItem(setup.rectRight, setup.doubleRectColor)
+        } else if (challengeId == Challenge.Pairs) {
+            var setup = backendInterface.GetPairsSetup()
+            simulatorCanvas.createBorders(setup.pairsBorders, 10, setup.pairsColor)
         }
     }
 
@@ -75,6 +88,7 @@ Rectangle {
         var challenge = backendInterface.GetChallengeId()
         var imageData = backendInterface.GetImageFrameData()
         simulatorCanvas.createPeeps(imageData.peepsPositions, imageData.peepsColors)
+        //simulatorCanvas.createBarriers(imageData.barrierLocs)
         setChallengeItems(challenge)
 
         generation.text = "Generation " + imageData.generation

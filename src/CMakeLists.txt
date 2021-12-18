@@ -10,7 +10,7 @@ find_package(OpenMP)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Main source for the library 
-set(MAIN_SOURCES 
+set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/AlgorithmHelpers.cpp
     ${PROJECT_SOURCE_DIR}/AlgorithmHelpers.h
     ${PROJECT_SOURCE_DIR}/App.cpp
@@ -19,6 +19,8 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/Backend.h
     ${PROJECT_SOURCE_DIR}/BasicTypes.cpp
     ${PROJECT_SOURCE_DIR}/BasicTypes.h
+    ${PROJECT_SOURCE_DIR}/Challenges/AgainstAnyWall.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/AgainstAnyWall.h
     ${PROJECT_SOURCE_DIR}/Challenges/Altruism.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/Altruism.h
     ${PROJECT_SOURCE_DIR}/Challenges/AltruismSacrifice.cpp
@@ -35,18 +37,30 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/Challenges/Corner.h
     ${PROJECT_SOURCE_DIR}/Challenges/CornerWeighted.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/CornerWeighted.h
+    ${PROJECT_SOURCE_DIR}/Challenges/EastWestEighths.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/EastWestEighths.h
     ${PROJECT_SOURCE_DIR}/Challenges/iChallenges.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/iChallenges.h
     ${PROJECT_SOURCE_DIR}/Challenges/LeftEighth.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/LeftEighth.h
+    ${PROJECT_SOURCE_DIR}/Challenges/LocationSequence.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/LocationSequence.h
+    ${PROJECT_SOURCE_DIR}/Challenges/MigrateDistance.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/MigrateDistance.h
+    ${PROJECT_SOURCE_DIR}/Challenges/NearBarrier.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/NearBarrier.h
     ${PROJECT_SOURCE_DIR}/Challenges/NeighborCount.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/NeighborCount.h
+    ${PROJECT_SOURCE_DIR}/Challenges/Pairs.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/Pairs.h
     ${PROJECT_SOURCE_DIR}/Challenges/RadioactiveWalls.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/RadioactiveWalls.h
     ${PROJECT_SOURCE_DIR}/Challenges/RightHalf.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/RightHalf.h
     ${PROJECT_SOURCE_DIR}/Challenges/RightQuarter.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/RightQuarter.h
+    ${PROJECT_SOURCE_DIR}/Challenges/TouchAnyWall.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/TouchAnyWall.h
     ${PROJECT_SOURCE_DIR}/GenerationGenerator.cpp
     ${PROJECT_SOURCE_DIR}/GenerationGenerator.h
     ${PROJECT_SOURCE_DIR}/Genome.cpp
