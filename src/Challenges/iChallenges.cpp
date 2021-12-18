@@ -46,7 +46,7 @@ std::vector<std::pair<uint16_t, float> >& iChallenge::EvaluateWhenNewGeneration(
         // ToDo: if the parents no longer need their genome record, we could
         // possibly do a move here instead of copy, although it's doubtful that
         // the optimization would be noticeable.
-        if (passed.first && peeps[index].nnet.connections.size() > 0) {
+        if (passed.first && !peeps[index].nnet.connections.empty()) {
             m_Parents.push_back( { index, passed.second } );
         }
     }

@@ -28,7 +28,7 @@ std::pair<bool, float> NearBarrier::PassedCriteria(const Peep& peep, const Param
 
     const std::vector<Coord> barrierCenters = grid.getBarrierCenters();
     float minDistance = 1e8;
-    for (Coord center : barrierCenters) {
+    for (auto& center : barrierCenters) {
         float distance = (peep.loc - center).length();
         if (distance < minDistance) {
             minDistance = distance;

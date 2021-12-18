@@ -8,7 +8,13 @@
 /*
 Basic types used throughout the project:
 
-Compass - an enum with enumerants N=0, NE, E, SW, S, SW, W, NW, CENTER
+Compass - an enum with enumerants SW, S, SE, W, CENTER, E, NW, N, NE
+
+    Compass arithmetic values:
+
+        6  7  8
+        3  4  5
+        0  1  2
 
 Dir, Coord, Polar, and their constructors:
 
@@ -69,8 +75,8 @@ struct __attribute__((packed)) Dir
 {
     static Dir random8(RandomUintGenerator& r) { return Dir(Compass::N).rotate(r(0, 7)); }
 
-    Dir(Compass dir = Compass::CENTER) : dir9{dir} {};
-    Dir operator=(Compass d) { dir9 = d; return *this; }
+    Dir(Compass dir = Compass::CENTER) : dir9{dir} {}
+    Dir& operator=(const Compass& d) { dir9 = d; return *this; }
     uint8_t asInt() const { return (uint8_t)dir9; }
     /*!
     A normalized Coord is a Coord with x and y == -1, 0, or 1.
@@ -127,8 +133,10 @@ struct __attribute__((packed)) Coord
     */
     Coord normalize() const;
     unsigned length() const { return (int)(std::sqrt(x * x + y * y)); } // round down
-    //! Calculate the angle, round to the nearest 360/8 degree slice, then
-    //! convert the slice to a Dir8Compass value.
+    //! Effectively, we want to check if a coordinate lies in a 45 degree region (22.5 degrees each side)
+    //! centered on each compass direction. By first rotating the system by 22.5 degrees clockwise
+    //! the boundaries to these regions become much easier to work with as they just align with the 8 axes.
+    //! (Thanks to @Asa-Hopkins for this optimization -- drm)
     Dir asDir() const;
     Polar asPolar() const;
 

@@ -42,7 +42,7 @@ void PeepsPool::drainDeathQueue()
 //-------------------------------------------------------------------------
 void PeepsPool::drainMoveQueue()
 {
-    for (auto moveRecord : moveQueue) {
+    for (auto& moveRecord : moveQueue) {
         auto& peep = (*this)[moveRecord.first];
         Coord newLoc = moveRecord.second;
         Dir moveDir = (newLoc - peep.loc).asDir();

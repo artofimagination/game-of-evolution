@@ -441,7 +441,7 @@ Genetics::Genome GenerationGenerator::generateChildGenome(const std::vector<Gene
     const Genetics::Genome &g1 = parentGenomes[parent1Idx];
     const Genetics::Genome &g2 = parentGenomes[parent2Idx];
 
-    if (g1.size() == 0 || g2.size() == 0) {
+    if (g1.empty() || g2.empty()) {
         std::cout << "invalid genome" << std::endl;
         assert(false);
     }
@@ -459,11 +459,11 @@ Genetics::Genome GenerationGenerator::generateChildGenome(const std::vector<Gene
         if (g1.size() > g2.size()) {
             genome = g1;
             overlayWithSliceOf(g2);
-            assert(genome.size() > 0);
+            assert(!genome.empty());
         } else {
             genome = g2;
             overlayWithSliceOf(g1);
-            assert(genome.size() > 0);
+            assert(!genome.empty());
         }
 
         // Trim to length = average length of parents
@@ -473,16 +473,16 @@ Genetics::Genome GenerationGenerator::generateChildGenome(const std::vector<Gene
             ++sum;
         }
         Genetics::cropLength(genome, sum / 2, m_Random);
-        assert(genome.size() > 0);
+        assert(!genome.empty());
     } else {
         genome = g2;
-        assert(genome.size() > 0);
+        assert(!genome.empty());
     }
 
     Genetics::randomInsertDeletion(genome, m_Random, m_Params);
-    assert(genome.size() > 0);
+    assert(!genome.empty());
     applyPointMutations(genome, m_Random, m_Params);
-    assert(genome.size() > 0);
+    assert(!genome.empty());
     assert(genome.size() <= m_Params.genomeMaxLength);
 
     return genome;
@@ -529,7 +529,8 @@ unsigned GenerationGenerator::spawnNewGeneration(unsigned generation, unsigned m
         });
 
     // Assemble a list of all the parent genomes. These will be ordered by their
-    // scores if the parents[] container was sorted by score
+    // scores if the parents[] container was sorted by score.
+    parentGenomes.reserve(parents.size());
     for (const std::pair<uint16_t, float> &parent : parents) {
         parentGenomes.push_back(m_PeepsPool[parent.first].genome);
     }
@@ -540,7 +541,7 @@ unsigned GenerationGenerator::spawnNewGeneration(unsigned generation, unsigned m
 
     // Now we have a container of zero or more parents' genomes
 
-    if (parentGenomes.size() != 0) {
+    if (!parentGenomes.empty()) {
         // Spawn a new generation
         initializeNewGeneration(parentGenomes, generation + 1);
     } else {

@@ -43,13 +43,13 @@ std::vector<std::pair<uint16_t, float> >& Altruism::EvaluateWhenNewGeneration(
     for (uint16_t index = 1; index <= params.population; ++index) {
         // This the test for the spawning area:
         std::pair<bool, float> passed = PassedCriteria(peeps[index], params, grid);
-        if (passed.first && peeps[index].nnet.connections.size() > 0) {
+        if (passed.first && !peeps[index].nnet.connections.empty()) {
             parents.push_back( { index, passed.second } );
         } else {
             // This is the test for the sacrificial area:
             AltruismSacrifice sacrificeChallenge(params);
             passed = sacrificeChallenge.PassedCriteria(peeps[index], params, grid);
-            if (passed.first && peeps[index].nnet.connections.size() > 0) {
+            if (passed.first && !peeps[index].nnet.connections.empty()) {
                 if (considerKinship) {
                     sacrificesIndexes.push_back(index);
                 } else {
@@ -94,7 +94,7 @@ std::vector<std::pair<uint16_t, float> >& Altruism::EvaluateWhenNewGeneration(
         // Limit the parent list
         unsigned numberSaved = sacrificedCount * altruismFactor;
         std::cout << parents.size() << " passed, " << sacrificedCount << " sacrificed, " << numberSaved << " saved" << std::endl; // !!!
-        if (parents.size() > 0 && numberSaved < parents.size()) {
+        if (!parents.empty() && numberSaved < parents.size()) {
             parents.erase(parents.begin() + numberSaved, parents.end());
         }
     }

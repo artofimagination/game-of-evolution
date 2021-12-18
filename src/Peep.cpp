@@ -21,7 +21,7 @@ Peep::Peep(const Parameters& params, const Grid& grid)
 void Peep::initialize(
     uint16_t index_,
     Coord loc_,
-    const Genetics::Genome &&genome_,
+    Genetics::Genome &&genome_,
     RandomUintGenerator& random,
     Grid& grid)
 {
