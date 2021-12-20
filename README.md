@@ -4,7 +4,7 @@ This is a for from the great repository of [biosim4](https://github.com/davidrmi
 At the moment the backend logic is identical to the original biosim4 repository.
 
 Initial look of the UI
-![doc1](https://github.com/artofimagination/game-of-evolution/resources/DocImg1.png)
+![doc1](https://github.com/artofimagination/game-of-evolution/blob/game-of-evolution/resources/DocImg1.png)
 
 # Intro
 I found the very idea of mixing neural networks and genetic algorithms fascinating and was dabbling around with my own engine in the past. But biosim4 is basically doing everything I needed. I think there are numerous applications of this system and the only thing to do is to add the appropriate sensor/action neurons and matching challenges.
@@ -39,4 +39,4 @@ This application failed to start because no Qt platform plugin could be initiali
 Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, wayland-egl, wayland, wayland-xcomposite-egl, wayland-xcomposite-glx, xcb.
 ```
 
-The caontainer shall be configured by the ```devcontainer.json``` to enable X11 forwarding, so most likley you forgot to run ```xhost local:docker``` in the host system command line.
+The container shall be configured by the ```devcontainer.json``` to enable X11 forwarding, so most likley you forgot to run ```xhost local:docker``` in the host system command line.
