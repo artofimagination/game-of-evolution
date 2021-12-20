@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Challenges/iChallenges.h"
+#include "Barriers/iBarriers.h"
 
 #include <QColor>
 #include <QMetaType>
@@ -42,8 +43,25 @@ public:
     };
     Q_ENUM(Value)
     static_assert(static_cast<unsigned>(QML::Challenge::Value::NoOfChallenges) == static_cast<unsigned>(eChallenges::NoOfChallenges));
+};
 
-    // explicit Challenge() = default;
+class Barrier
+{
+    Q_GADGET
+public:
+    enum class Value : uint8_t
+    {
+        NoBarrier,
+        VerticalBarConstantLoc,
+        VerticalBarRandomLoc,
+        FiveBlocksStaggered,
+        HorizontalBarConstantLoc,
+        ThreeFloatingIslands,
+        SpotsSpecified,
+        NoOfTypes
+    };
+    Q_ENUM(Value)
+    static_assert(static_cast<unsigned>(QML::Barrier::Value::NoOfTypes) == static_cast<unsigned>(eBarrierType::NoOfTypes));
 };
 
 struct AltruismSetup
@@ -162,6 +180,28 @@ public:
     Q_PROPERTY(unsigned border MEMBER border)
     Q_PROPERTY(unsigned distance MEMBER distance)
     Q_PROPERTY(QColor radioactiveColor MEMBER color)
+};
+
+struct RectBarrierSetup
+{
+    Q_GADGET
+public:
+    QVariantList barriers{};
+    QColor color{};
+    Q_PROPERTY(QVariantList rectBarriers MEMBER barriers)
+    Q_PROPERTY(QColor rectBarrierColor MEMBER color)
+};
+
+struct CircleBarrierSetup
+{
+    Q_GADGET
+public:
+    QVariantList barriers{};
+    float radius{};
+    QColor color{};
+    Q_PROPERTY(QVariantList circleBarriers MEMBER barriers)
+    Q_PROPERTY(float circleBarrierRadius MEMBER radius)
+    Q_PROPERTY(QColor circleBarrierColor MEMBER color)
 };
 
 } // namespace QML

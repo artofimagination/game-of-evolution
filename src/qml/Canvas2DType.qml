@@ -8,9 +8,11 @@ Item {
     height: parent.height
     visible: true
     property var challengeShapes: []
+    property var barrierShapes: []
     property var shapes: []
     //! Holds the simulator to UI scaling. Responsible to enlarge the simulation values.
     property var scaling: 1
+    property var peepsOffset: 1
     property var peepRadius: 1
     property var gradientStart: Qt.point(0, 0) 
     property var gradientEnd: Qt.point(0, 0) 
@@ -27,12 +29,17 @@ Item {
         for(var i = 0; i < challengeShapes.length; i++){
             challengeShapes[i].destroy()
         }
+        for(var i = 0; i < barrierShapes.length; i++){
+            barrierShapes[i].destroy()
+        }
         shapes = []
         challengeShapes = []
+        barrierShapes = []
     }
 
     function createPeeps(peepsPositions, peepsColors) {
         var radius = peepRadius * scaling / 2
+        peepsOffset = radius
         for(var i = 0; i < peepsPositions.length; i++){
             var position = peepsPositions[i]
             // Left and top side the peeps are cut in half, the radius offset fixing this.
@@ -48,6 +55,14 @@ Item {
         rectangle.width = rectangle.width * scaling
         rectangle.height = rectangle.height * scaling
         challengeShapes.push(rect.createObject(mainview, {"rect": rectangle, "fillColor": color}))
+    }
+
+    function createRectBarrierItem(rectangle, color) {
+        rectangle.x = rectangle.x * scaling
+        rectangle.y = rectangle.y * scaling
+        rectangle.width = rectangle.width * scaling
+        rectangle.height = rectangle.height * scaling
+        barrierShapes.push(rect.createObject(mainview, {"rect": rectangle, "fillColor": color}))
     }
 
     function createBorders(borders, borderLength, color) {
@@ -66,10 +81,17 @@ Item {
     }
     
     function createCircleChallengeItem(center, color, radius) {
-        center.x = center.x * scaling
-        center.y = center.y * scaling
+        center.x = center.x * scaling + peepsOffset
+        center.y = center.y * scaling + peepsOffset
         radius = radius * scaling
         challengeShapes.push(circle.createObject(mainview, {"position": center, "fillColor": color, "radius": radius}))
+    }
+
+    function createCircleBarrierItem(center, color, radius) {
+        center.x = center.x * scaling + peepsOffset
+        center.y = center.y * scaling + peepsOffset
+        radius = radius * scaling
+        barrierShapes.push(circle.createObject(mainview, {"position": center, "fillColor": color, "radius": radius}))
     }
 
     function setCanvasGradient(border, color, distance) {
@@ -177,6 +199,11 @@ Item {
 
             for(var i = 0; i < mainview.challengeShapes.length; i++){
                 challengeShapes[i].draw(context)
+            }
+
+            for(var i = 0; i < mainview.barrierShapes.length; i++){
+                console.log(barrierShapes[i].position, barrierShapes[i].radius)
+                barrierShapes[i].draw(context)
             }
         }
     }

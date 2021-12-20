@@ -1,5 +1,4 @@
 #include "PeepsPool.h"
-#include <iostream>
 
 //-------------------------------------------------------------------------
 PeepsPool::PeepsPool(Grid& grid)

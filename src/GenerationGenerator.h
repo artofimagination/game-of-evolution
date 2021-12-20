@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Barriers/iBarriers.h"
+#include "Challenges/iChallenges.h"
 #include "Genome.h"
 #include "PheromoneSignals.h"
-#include "Challenges/iChallenges.h"
+
 
 class Grid;
 class Parameters;
@@ -20,12 +22,14 @@ public:
         PeepsPool& peepsPool,
         PheromoneSignals& pheromones,
         const Parameters& params,
-        RandomUintGenerator& random);
+        RandomUintGenerator& random,
+        const eBarrierType& barrierType,
+        std::vector<std::unique_ptr<Barriers::iBarrier> >& barriers);
 
     // Requires that the grid, signals, and peeps containers have been allocated.
     // This will erase the grid and signal layers, then create a new population in
     // the peeps container at random locations with random genomes.
-    void initializeGeneration0();
+    void initializeGeneration0(eBarrierType barrierType);
 
     // At this point, the deferred death queue and move queue have been processed
     // and we are left with zero or more peeps who will repopulate the
@@ -59,7 +63,10 @@ private:
     //! peeps containers have been allocated. This will erase the grid and signal
     //! layers, then create a new population in the peeps container with random
     //! locations and genomes derived from the container of parent genomes.
-    void initializeNewGeneration(const std::vector<Genetics::Genome> &parentGenomes, unsigned generation);
+    void initializeNewGeneration(
+        const std::vector<Genetics::Genome> &parentGenomes,
+        eBarrierType barrierType,
+        unsigned generation);
 
     //! This generates a child genome from one or two parent genomes.
     //! If the parameter p.sexualReproduction is true, two parents contribute
@@ -70,11 +77,13 @@ private:
     //! The epoch log contains one line per generation in a format that can be.
     void appendEpochLog(unsigned generation, unsigned numberSurvivors, unsigned murderCount);
 
-    Grid& m_Grid;
-    PeepsPool& m_PeepsPool;
-    PheromoneSignals& m_PheromoneSignals;
-    const Parameters& m_Params;
-    RandomUintGenerator& m_Random;
-    std::unique_ptr<Challenges::iChallenge> m_xChallenge{};
-    eChallenges m_CurrentChallenge{eChallenges::Altruism};
+    Grid&                                               m_Grid;
+    PeepsPool&                                          m_PeepsPool;
+    PheromoneSignals&                                   m_PheromoneSignals;
+    const Parameters&                                   m_Params;
+    RandomUintGenerator&                                m_Random;
+    std::unique_ptr<Challenges::iChallenge>             m_xChallenge{};
+    eChallenges                                         m_CurrentChallenge{eChallenges::Altruism};
+    const eBarrierType&                                 m_BarrierType;
+    std::vector<std::unique_ptr<Barriers::iBarrier> >&  m_Barriers;
 };

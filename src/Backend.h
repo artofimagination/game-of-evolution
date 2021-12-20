@@ -47,12 +47,14 @@ public:
 
     //! Stops the work.
     Q_INVOKABLE void Stop() { m_Stop = true; }
-
     //! Returns the current challenge id.
     eChallenges GetChallengeId() const;
-
     //! Returns the current challenge.
     Challenges::iChallenge* GetChallenge() const;
+    //! Returns the barrier type.
+    eBarrierType GetBarrierType() const { return m_BarrierType; };
+    //! Returns the barrier vector.
+    const std::vector<std::unique_ptr<Barriers::iBarrier> >& GetBarriers() const;
 
 signals:
     void ParametersUpdated();
@@ -145,14 +147,16 @@ private:
     // Synchronous version, always returns true
     void saveVideoFrameSync(unsigned simStep, unsigned generation);
 
-    QReadWriteLock m_Lock;
-    bool m_Stop{false};  ///!< When set to true stop the work.
-    ImageFrameData m_UIFrameData{};
+    QReadWriteLock                                    m_Lock;
+    bool                                              m_Stop{false};  ///!< When set to true stop the work.
+    ImageFrameData                                    m_UIFrameData{};
 
-    std::unique_ptr<RandomUintGenerator> m_xRandomGenerator{};
-    std::unique_ptr<ParameterIO> m_xParameterIO{};
-    std::unique_ptr<Grid> m_xGrid{};
-    std::unique_ptr<PheromoneSignals> m_xSignals{};
-    std::unique_ptr<PeepsPool> m_xPeeps{};
-    std::unique_ptr<GenerationGenerator> m_xGenerationGenerator{};
+    std::unique_ptr<RandomUintGenerator>              m_xRandomGenerator{};
+    std::unique_ptr<ParameterIO>                      m_xParameterIO{};
+    std::unique_ptr<Grid>                             m_xGrid{};
+    std::unique_ptr<PheromoneSignals>                 m_xSignals{};
+    std::unique_ptr<PeepsPool>                        m_xPeeps{};
+    std::unique_ptr<GenerationGenerator>              m_xGenerationGenerator{};
+    eBarrierType                                      m_BarrierType{};
+    std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};
 };

@@ -19,6 +19,12 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/Backend.h
     ${PROJECT_SOURCE_DIR}/BasicTypes.cpp
     ${PROJECT_SOURCE_DIR}/BasicTypes.h
+    ${PROJECT_SOURCE_DIR}/Barriers/CircleBarrier.cpp
+    ${PROJECT_SOURCE_DIR}/Barriers/CircleBarrier.h
+    ${PROJECT_SOURCE_DIR}/Barriers/iBarriers.cpp
+    ${PROJECT_SOURCE_DIR}/Barriers/iBarriers.h
+    ${PROJECT_SOURCE_DIR}/Barriers/RectangleBarrier.cpp
+    ${PROJECT_SOURCE_DIR}/Barriers/RectangleBarrier.h
     ${PROJECT_SOURCE_DIR}/Challenges/AgainstAnyWall.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/AgainstAnyWall.h
     ${PROJECT_SOURCE_DIR}/Challenges/Altruism.cpp

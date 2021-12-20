@@ -9,9 +9,6 @@
 #include <QPoint>
 
 
-#include <iostream>
-
-
 //---------------------------------------------------------------------------
 Backend::Backend()
   : m_xRandomGenerator(std::make_unique<RandomUintGenerator>())
@@ -24,7 +21,10 @@ Backend::Backend()
       *m_xPeeps.get(), 
       *m_xSignals.get(), 
       m_xParameterIO->GetParamRef(),
-      *m_xRandomGenerator.get()))
+      *m_xRandomGenerator.get(),
+      m_BarrierType,
+      m_Barriers))
+  , m_BarrierType(static_cast<eBarrierType>(m_xParameterIO->GetParamRef().barrierType))
 {
     qRegisterMetaType<ImageFrameData>("ImageFrameData");
 
@@ -46,11 +46,12 @@ void Backend::Run()
     m_xPeeps->init(parameters.population, parameters); // the peeps themselves
 
     unsigned generation = 0;
-    m_xGenerationGenerator->initializeGeneration0(); // starting population
+    m_xGenerationGenerator->initializeGeneration0(static_cast<eBarrierType>(parameters.barrierType)); // starting population
     m_xGenerationGenerator->SetStartChallenge(static_cast<eChallenges>(parameters.challenge));
 
     while (!m_Stop)
     {
+        m_BarrierType = static_cast<eBarrierType>(parameters.barrierType);
         m_xGenerationGenerator->SetChallenge(static_cast<eChallenges>(parameters.challenge));
         while (!m_Stop && generation < parameters.maxGenerations) { // generation loop
             unsigned murderCount = 0; // for reporting purposes
@@ -329,7 +330,6 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
     // saveFrameThread() is using it to output a video frame.
     m_UIFrameData.simStep = simStep;
     m_UIFrameData.generation = generation;
-    m_UIFrameData.barrierLocs.clear();
     m_UIFrameData.signalLayers.clear();
     m_UIFrameData.maxPopulation = m_xParameterIO->GetParamRef().population;
 
@@ -343,10 +343,6 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
                 m_UIFrameData.peepsPositions.append(QPoint(peep.loc.x, peep.loc.y));
                 m_UIFrameData.peepsColors.append(ConvertUint8ToQColor(Genetics::makeGeneticColor(peep.genome)));
             }
-        }
-        auto const &barrierLocs = m_xGrid->getBarrierLocations();
-        for (Coord loc : barrierLocs) {
-            m_UIFrameData.barrierLocs.append(QPoint(loc.x, loc.y));
         }
         m_Lock.unlock();
     }
@@ -362,4 +358,10 @@ eChallenges Backend::GetChallengeId() const
 Challenges::iChallenge* Backend::GetChallenge() const
 {
     return m_xGenerationGenerator->GetChallenge();
+}
+
+//---------------------------------------------------------------------------
+const std::vector<std::unique_ptr<Barriers::iBarrier> >& Backend::GetBarriers() const
+{
+    return m_Barriers;
 }

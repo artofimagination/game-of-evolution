@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Barriers/iBarriers.h"
 #include "BasicTypes.h"
 
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <vector>
 
 class Parameters;
@@ -52,16 +54,14 @@ public:
     Coord findEmptyLocation() const;
 
     // This generates barrier points, which are grid locations with value
-    // BARRIER. A list of barrier locations is saved in private member
-    // Grid::barrierLocations and, for some scenarios, Grid::barrierCenters.
-    // Those members are available read-only with Grid::getBarrierLocations().
+    // BARRIER. A list of barrier locations is saved in a member in the backend but
+    // for some scenarios, Grid::barrierCenters.
     // This function assumes an empty grid. This is typically called by
     // the main simulator thread after Grid::init() or Grid::zeroFill().
 
     // This file typically is under constant development and change for
     // specific scenarios.
-    void createBarrier(unsigned barrierType);
-    const std::vector<Coord> &getBarrierLocations() const { return barrierLocations; }
+    void createBarrier(eBarrierType barrierType, std::vector<std::unique_ptr<Barriers::iBarrier> >& barriers);
     const std::vector<Coord> &getBarrierCenters() const { return barrierCenters; }
     // Direct access:
     Column & operator[](uint16_t columnXNum) { return data[columnXNum]; }
@@ -71,6 +71,5 @@ private:
     RandomUintGenerator& m_RandomGenerator;
 
     std::vector<Column> data;
-    std::vector<Coord> barrierLocations;
     std::vector<Coord> barrierCenters;
 };

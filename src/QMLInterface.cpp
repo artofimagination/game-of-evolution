@@ -1,6 +1,8 @@
 #include "QMLInterface.h"
 
 #include "Backend.h"
+#include "Barriers/CircleBarrier.h"
+#include "Barriers/RectangleBarrier.h"
 #include "Challenges/AgainstAnyWall.h"
 #include "Challenges/Altruism.h"
 #include "Challenges/AltruismSacrifice.h"
@@ -30,6 +32,7 @@ QObject* QMLInterface::StartBackend()
 {
     std::cout << "Starting backend..." << std::endl;
     qmlRegisterUncreatableType<QML::Challenge>("backendGuiInterface", 1, 0, "Challenge", "Not creatable as it is an enum type");
+    qmlRegisterUncreatableType<QML::Barrier>("backendGuiInterface", 1, 0, "Barrier", "Not creatable as it is an enum type");
     qRegisterMetaType<QML::AltruismSetup>("AltruismSetup");
     qRegisterMetaType<QML::CircleSetup>("CircleSetup");
     qRegisterMetaType<QML::CornerSetup>("CornerSetup");
@@ -40,6 +43,8 @@ QObject* QMLInterface::StartBackend()
     qRegisterMetaType<QML::RadioactiveWallSetup>("RadioactiveWallSetup");
     qRegisterMetaType<QML::CenterSparsedSetup>("CenterSparsedSetup");
     qRegisterMetaType<QML::NeighborCountSetup>("NeighborCountSetup");
+    qRegisterMetaType<QML::CircleBarrierSetup>("CircleBarrierSetup");
+    qRegisterMetaType<QML::RectBarrierSetup>("RectBarrierSetup");
     m_pBackendWorker = new Backend();
     m_pBackendWorker->moveToThread(&m_WorkerThread);
     connect(&m_WorkerThread, &QThread::finished, m_pBackendWorker, &Backend::deleteLater);
@@ -300,6 +305,41 @@ QML::NeighborCountSetup QMLInterface::GetNeighborCountSetup()
     return setup;
 }
 
+//-------------------------------------------------------------------------
+QML::CircleBarrierSetup QMLInterface::GetCircleBarriers()
+{
+    QML::CircleBarrierSetup setup;
+    m_Mutex.lock();
+    auto& barriers = m_pBackendWorker->GetBarriers();
+    for (size_t i = 0; i < barriers.size(); ++i)
+    {
+        auto setupInternal = static_cast<Barriers::Circle*>(barriers[i].get())->GetSetup();
+        setup.radius = setupInternal.radius;
+        setup.barriers.push_back(QPoint(setupInternal.center.x, setupInternal.center.y));
+    }
+    m_Mutex.unlock();
+    
+    setup.color = QColor(Qt::darkGray);
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::RectBarrierSetup QMLInterface::GetRectBarriers()
+{
+    QML::RectBarrierSetup setup;
+    m_Mutex.lock();
+    auto& barriers = m_pBackendWorker->GetBarriers();
+    for (size_t i = 0; i < barriers.size(); ++i)
+    {
+        auto setupInternal = static_cast<Barriers::Rectangle*>(barriers[i].get())->GetSetup();
+        setup.barriers.push_back(QRect(setupInternal.topLeft.x, setupInternal.topLeft.y, setupInternal.width + 1, setupInternal.height + 1));
+    }
+    m_Mutex.unlock();
+    
+    setup.color = QColor(Qt::darkGray);
+    return setup;
+}
+
 //---------------------------------------------------------------------------
 ImageFrameData QMLInterface::GetImageFrameData()
 {
@@ -310,9 +350,15 @@ ImageFrameData QMLInterface::GetImageFrameData()
 }
 
 //-------------------------------------------------------------------------
-unsigned QMLInterface::GetChallengeId() 
+unsigned QMLInterface::GetChallengeId() const
 {
     return static_cast<unsigned>(m_pBackendWorker->GetChallengeId()); 
+};
+
+//-------------------------------------------------------------------------
+unsigned QMLInterface::GetBarrierType() const
+{
+    return static_cast<unsigned>(m_pBackendWorker->GetBarrierType()); 
 };
 
 //-------------------------------------------------------------------------

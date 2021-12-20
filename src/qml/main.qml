@@ -83,13 +83,33 @@ Rectangle {
         }
     }
 
+    function setBarriers(barrierType)
+    {
+        if (barrierType == Barrier.ThreeFloatingIslands ||
+            barrierType == Barrier.SpotsSpecified) {
+            var setup = backendInterface.GetCircleBarriers()
+            for(var i = 0; i < setup.circleBarriers.length; i++){
+                simulatorCanvas.createCircleBarrierItem(setup.circleBarriers[i], setup.circleBarrierColor, setup.circleBarrierRadius)
+            }
+        } else if (barrierType == Barrier.VerticalBarConstantLoc ||
+                   barrierType == Barrier.VerticalBarRandomLoc ||
+                   barrierType == Barrier.FiveBlocksStaggered ||
+                   barrierType == Barrier.HorizontalBarConstantLoc) {
+            var setup = backendInterface.GetRectBarriers()
+            for(var i = 0; i < setup.rectBarriers.length; i++){
+                simulatorCanvas.createRectBarrierItem(setup.rectBarriers[i], setup.rectBarrierColor)
+            }
+        }
+    }
+
     function updateUiData() {
         simulatorCanvas.clear();
         var challenge = backendInterface.GetChallengeId()
+        var barrierType = backendInterface.GetBarrierType()
         var imageData = backendInterface.GetImageFrameData()
         simulatorCanvas.createPeeps(imageData.peepsPositions, imageData.peepsColors)
-        //simulatorCanvas.createBarriers(imageData.barrierLocs)
         setChallengeItems(challenge)
+        setBarriers(barrierType)
 
         generation.text = "Generation " + imageData.generation
         simulationStep.text = "Sim step " + imageData.simStep

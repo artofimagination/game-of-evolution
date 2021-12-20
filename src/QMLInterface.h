@@ -31,7 +31,8 @@ public:
     Q_INVOKABLE int UiScale() { return cUiScaling; }
 
     Q_INVOKABLE void Quit();
-    Q_INVOKABLE unsigned GetChallengeId();
+    Q_INVOKABLE unsigned GetChallengeId() const;
+    Q_INVOKABLE unsigned GetBarrierType() const;
     Q_INVOKABLE QML::AltruismSetup GetAltruismSetup();
     Q_INVOKABLE QML::CircleSetup GetCircleSetup();
     Q_INVOKABLE QML::AnyWallSetup GetAgainstAnyWallSetup();
@@ -50,6 +51,8 @@ public:
     Q_INVOKABLE QML::NeighborCountSetup GetNeighborCountSetup();
     Q_INVOKABLE QML::CircleSetup GetAltruismSacrificeSetup();
     Q_INVOKABLE ImageFrameData GetImageFrameData();
+    Q_INVOKABLE QML::CircleBarrierSetup GetCircleBarriers();
+    Q_INVOKABLE QML::RectBarrierSetup GetRectBarriers();
 private:
 
     //! Enlarge the simulation data.
