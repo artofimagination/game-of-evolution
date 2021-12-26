@@ -29,7 +29,10 @@ public:
     // Requires that the grid, signals, and peeps containers have been allocated.
     // This will erase the grid and signal layers, then create a new population in
     // the peeps container at random locations with random genomes.
-    void initializeGeneration0(eBarrierType barrierType);
+    void initializeGeneration0(
+        eBarrierType barrierType,
+        uint8_t sensorTypeCount,
+        uint8_t actionTypeCount);
 
     // At this point, the deferred death queue and move queue have been processed
     // and we are left with zero or more peeps who will repopulate the
@@ -41,7 +44,11 @@ public:
     // nets instead of rebuilding them.
     // Returns number of survivor-reproducers.
     // Must be called in single-thread mode between generations.
-    unsigned spawnNewGeneration(unsigned generation, unsigned murderCount);
+    unsigned spawnNewGeneration(
+        unsigned generation,
+        unsigned murderCount,
+        uint8_t sensorTypeCount,
+        uint8_t actionTypeCount);
 
     //! Creates a new challenge object if there is a challenge change.
     void SetChallenge(eChallenges challenge);
@@ -66,7 +73,9 @@ private:
     void initializeNewGeneration(
         const std::vector<Genetics::Genome> &parentGenomes,
         eBarrierType barrierType,
-        unsigned generation);
+        unsigned generation,
+        uint8_t sensorTypeCount,
+        uint8_t actionTypeCount);
 
     //! This generates a child genome from one or two parent genomes.
     //! If the parameter p.sexualReproduction is true, two parents contribute

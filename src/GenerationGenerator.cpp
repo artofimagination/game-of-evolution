@@ -54,7 +54,10 @@ void GenerationGenerator::SetStartChallenge(eChallenges challenge)
 }
 
 //-------------------------------------------------------------------------
-void GenerationGenerator::initializeGeneration0(eBarrierType barrierType)
+void GenerationGenerator::initializeGeneration0(
+    eBarrierType barrierType,
+    uint8_t sensorTypeCount,
+    uint8_t actionTypeCount)
 {
     // The grid has already been allocated, just clear and reuse it
     m_Grid.zeroFill();
@@ -68,7 +71,7 @@ void GenerationGenerator::initializeGeneration0(eBarrierType barrierType)
     // Spawn the population. The peeps container has already been allocated,
     // just clear and reuse it
     for (uint16_t index = 1; index <= m_Params.population; ++index) {
-        m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), makeRandomGenome(), m_Random, m_Grid);
+        m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), makeRandomGenome(), m_Random, sensorTypeCount, actionTypeCount, m_Grid);
     }
 }
 
@@ -163,7 +166,9 @@ Genetics::Genome GenerationGenerator::generateChildGenome(const std::vector<Gene
 void GenerationGenerator::initializeNewGeneration(
     const std::vector<Genetics::Genome> &parentGenomes,
     eBarrierType barrierType,
-    unsigned generation)
+    unsigned generation,
+    uint8_t sensorTypeCount,
+    uint8_t actionTypeCount)
 {
     // The grid, signals, and peeps containers have already been allocated, just
     // clear them if needed and reuse the elements
@@ -176,12 +181,16 @@ void GenerationGenerator::initializeNewGeneration(
 
     // Spawn the population. This overwrites all the elements of peeps[]
     for (uint16_t index = 1; index <= m_Params.population; ++index) {
-        m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), generateChildGenome(parentGenomes), m_Random, m_Grid);
+        m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), generateChildGenome(parentGenomes), m_Random, sensorTypeCount, actionTypeCount, m_Grid);
     }
 }
 
 //-------------------------------------------------------------------------
-unsigned GenerationGenerator::spawnNewGeneration(unsigned generation, unsigned murderCount)
+unsigned GenerationGenerator::spawnNewGeneration(
+    unsigned generation,
+    unsigned murderCount,
+    uint8_t sensorTypeCount,
+    uint8_t actionTypeCount)
 {
     auto settings = Challenges::Settings();
     settings.generation = generation;
@@ -217,11 +226,11 @@ unsigned GenerationGenerator::spawnNewGeneration(unsigned generation, unsigned m
 
     if (!parentGenomes.empty()) {
         // Spawn a new generation
-        initializeNewGeneration(parentGenomes, m_BarrierType, generation + 1);
+        initializeNewGeneration(parentGenomes, m_BarrierType, generation + 1, sensorTypeCount, actionTypeCount);
     } else {
         // Special case: there are no surviving parents: start the simulation over
         // from scratch with randomly-generated genomes
-        initializeGeneration0(m_BarrierType);
+        initializeGeneration0(m_BarrierType, sensorTypeCount, actionTypeCount);
     }
 
     return parentGenomes.size();

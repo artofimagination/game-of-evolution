@@ -1,7 +1,8 @@
-import QtQuick 2.1
-import QtQuick.Controls 2.0
+import QtQuick 2.12
+import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.2
 import QtQuick.Window 2.3
+import QtQml.Models 2.2
 
 import backendGuiInterface 1.0
 
@@ -102,6 +103,21 @@ Rectangle {
         }
     }
 
+    function setSensorsActionsList()
+    {
+        var names = backendInterface.GetSensorNames()
+        for(var i = 0; i < names.length; i++){
+            sensorModel.model.append({name:names[i], selected: false})
+        }
+        sensorsScroll.contentHeight = sensorModel.model.count * sensorModel.itemHeight
+
+        var names = backendInterface.GetActionNames()
+        for(var i = 0; i < names.length; i++){
+            actionModel.model.append({name:names[i], selected: false})
+        }
+        actionsScroll.contentHeight = actionModel.model.count * actionModel.itemHeight
+    }
+
     function updateUiData() {
         simulatorCanvas.clear();
         var challenge = backendInterface.GetChallengeId()
@@ -113,7 +129,8 @@ Rectangle {
 
         generation.text = "Generation " + imageData.generation
         simulationStep.text = "Sim step " + imageData.simStep
-        maxPopulation.text = "Max population " + imageData.maxPopulation 
+        maxPopulation.text = "Max population " + imageData.maxPopulation
+        
     }
 
     QMLInterface{
@@ -150,17 +167,61 @@ Rectangle {
         }
 
         Frame {
+            anchors.top: canvasRectangle.bottom
+            Row {
+                padding: 5.0
+                spacing: 20
+                Button {
+                    id: resetButton
+                    text: "Reset"
+                    background: Rectangle {
+                        color: "darkgrey"
+                    }
+
+                    onClicked: {
+                        backendInterface.ResetSim()
+                    }
+                }
+
+                Button {
+                    id: startButton
+                    text: "Start"
+                    background: Rectangle {
+                        color: "darkgrey"
+                    }
+
+                    onClicked: {
+                        backendInterface.StartSim()
+                    }
+                }
+
+                Button {
+                    id: stopButton
+                    text: "Stop"
+                    background: Rectangle {
+                        color: "darkgrey"
+                    }
+
+                    onClicked: {
+                        backendInterface.StopSim()
+                    }
+                }
+            }
+        }
+
+        Frame {
             id: detailsRectangle
             anchors.left: canvasRectangle.right
             anchors.top: simulatorWindow.top
             anchors.leftMargin: 50
             anchors.topMargin: 20
             Column {
+                spacing: 5
                 Text {
                     id: details
                     text: "Details:"
                     font.bold: true
-                    font.pointSize: 14
+                    font.pointSize: 16
                 }
                 Text {
                     id: generation
@@ -180,50 +241,196 @@ Rectangle {
             }
         }
 
-        // GridLayout {
-        //     id: mainAreaGrid
-        //     anchors.fill: parent
-        //     columns: 2
-        //     rows: 1
+        Frame {
+            id: settingsFrame
+            anchors.left: detailsRectangle.right
+            anchors.top: simulatorWindow.top
+            anchors.leftMargin: 50
+            anchors.topMargin: 20
+            Column {
+                spacing: 5
+                Text {
+                    id: settings
+                    text: "Settings:"
+                    font.bold: true
+                    font.pointSize: 16
+                }
 
+                Text {
+                    id: sensors
+                    text: "Sensors"
+                    font.italic: true
+                    font.pointSize: 14
+                }
+                
+                Rectangle {
+                    width: 400; height: 200
+                    
+                    ScrollView {
+                        id: sensorsScroll
+                        anchors.fill: parent
+                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+                        ScrollBar.vertical.interactive: true
+                        clip: true
+                        
+                        DelegateModel {
+                            property var itemHeight: 20
+                            property var itemsSelectedArray: []
+                            id: sensorModel
+                            model: ListModel {}
 
+                            groups: [
+                                DelegateModelGroup { name: "selected" }
+                            ]
 
-        //     Rectangle {
-        //         id: detailsElement
-        //         Layout.fillHeight: true
-        //         Layout.fillWidth: true
-        //         Layout.column: 50
-        //         Layout.columnSpan: 1
-        //         Layout.row: 1
-        //         Layout.rowSpan: 1
-        //         color: simulatorWindow.color
-        //         Rectangle {
-        //             Text {
-        //                 id: generation
-        //                 text: "Generation"
-        //                 font.bold: true
-        //                 font.pointSize: 12
-        //             }
-        //         }
+                            delegate: Rectangle {
+                                id: item
+                                height: sensorModel.itemHeight
+                                width: parent.width
+                                radius: 5
+                                border.color: {
+                                    if (selected)
+                                        return "black"
+                                    return "white"
+                                }
+                                color: {
+                                  if (selected)
+                                      return "lightsteelblue"
+                                  return "white"
+                                }
+                                Text {
+                                    font.pointSize: 12
+                                    font.bold: true
+                                    text: {
+                                        return name;
+                                    }
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        selectAllCheckBox.checked = false
+                                        sensorModel.model.get(index).selected = !sensorModel.model.get(index).selected
+                                    }
+                                }
+                            }
+                        }
 
-        //         Rectangle {
-        //             Layout.fillHeight: true
-        //             Layout.fillWidth: true
-        //             Layout.column: 50
-        //             Layout.columnSpan: 1
-        //             Layout.row: 2
-        //             Layout.rowSpan: 1
-        //             color: simulatorWindow.color
+                        ListView {
+                            anchors.fill: parent
+                            model: sensorModel
+                        }
+                    }
+                }
+                Text {
+                    id: actions
+                    text: "Actions"
+                    font.italic: true
+                    font.pointSize: 14
+                }
+                
+                Rectangle {
+                    width: 400; height: 200
+                    
+                    ScrollView {
+                        id: actionsScroll
+                        anchors.fill: parent
+                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+                        ScrollBar.vertical.interactive: true
+                        clip: true
+                        
+                        DelegateModel {
+                            property var itemHeight: 20
+                            id: actionModel
+                            model: ListModel { id: actionModelList }
 
-        //             Text {
-        //                 id: simulationStep
-        //                 text: "Sim step"
-        //                 font.bold: true
-        //                 font.pointSize: 12
-        //             }
-        //         }
-        //     }
-        //}
+                            groups: [
+                                DelegateModelGroup { name: "selected" }
+                            ]
+
+                            delegate: Rectangle {
+                                id: item
+                                height: actionModel.itemHeight
+                                width: parent.width
+                                radius: 5
+                                border.color: {
+                                    if (selected)
+                                        return "black"
+                                    return "white"
+                                }
+                                color: {
+                                  if (selected)
+                                      return "lightsteelblue"
+                                  return "white"
+                                }
+                                Text {
+                                    font.pointSize: 12
+                                    font.bold: true
+                                    text: {
+                                        return name;
+                                    }
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        selectAllCheckBox.checked = false
+                                        actionModel.model.get(index).selected = !actionModel.model.get(index).selected
+                                    }
+                                }
+                            }
+                        }
+
+                        ListView {
+                            anchors.fill: parent
+                            model: actionModel
+                        }
+                    }
+                }
+                Row {
+                    spacing: 80
+                    padding: 10.0
+                    Button {
+                        id: updateButton
+                        text: "Update"
+                        background: Rectangle {
+                            color: "darkgrey"
+                        }
+
+                        onClicked: {
+                            var sensorSelectedArray = []
+                            for(var i = 0; i < sensorModel.count; i++){
+                                sensorSelectedArray.push(sensorModel.model.get(i).selected)
+                            }
+                            var actionSelectedArray = []
+                            for(var i = 0; i < actionModel.count; i++){
+                                actionSelectedArray.push(actionModel.model.get(i).selected)
+                            }
+                            backendInterface.UpdateSensorsActions(sensorSelectedArray, actionSelectedArray)
+                        }
+                    }
+                    Row {
+                      spacing: 10
+
+                      Text {
+                          text: "Select All"
+                          font.pointSize: 12
+                      }
+
+                      CheckBox {
+                          id: selectAllCheckBox
+                          onClicked: {
+                              for(var i = 0; i < sensorModel.count; i++){
+                                  sensorModel.model.get(i).selected = selectAllCheckBox.checked
+                              }
+
+                              for(var i = 0; i < actionModel.count; i++){
+                                  actionModel.model.get(i).selected = selectAllCheckBox.checked
+                              }
+                          }
+                      }
+                    }
+                }
+            }
+        }
     }
 
     Button {
@@ -237,5 +444,9 @@ Rectangle {
             backendInterface.Quit()
             Qt.quit()
         }
+    }
+
+    Component.onCompleted: {
+        mainPage.setSensorsActionsList()
     }
 }

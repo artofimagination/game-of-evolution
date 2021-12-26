@@ -50,7 +50,13 @@ public:
             The values of the action neurons are saved in local container
             actionLevels[] which is returned to the caller by value (thanks RVO).
     ********************************************************************************/
-    std::array<float, SensorsActions::Action::NUM_ACTIONS> feedForward(unsigned simStep, const PeepsPool& peeps, const PheromoneSignals& pheromoneSignals, RandomUintGenerator& random); // reads sensors, returns actions
+    std::array<float, Actions::eType::NUM_ACTIONS> feedForward(
+        unsigned simStep,
+        const PeepsPool& peeps,
+        const PheromoneSignals& pheromoneSignals,
+        const Sensors& sensors,
+        RandomUintGenerator& random
+    ); // reads sensors, returns actions
 
     //! This is called when any individual is spawned.
     //! The responsiveness parameter will be initialized here to maximum value
@@ -61,6 +67,8 @@ public:
         Coord loc_,
         Genetics::Genome &&genome_,
         RandomUintGenerator& random,
+        uint8_t sensorTypeCount,
+        uint8_t actionTypeCount,
         Grid& grid);
     
     //! This function is used when an agent is spawned. This function converts the
@@ -73,7 +81,7 @@ public:
     //!    range 0..p.genomeMaxLength-1, keeping a count of outputs for each neuron.
     //! 2. Delete any referenced neuron index that has no outputs or only feeds itself.
     //! 3. Renumber the remaining neurons sequentially starting at 0.
-    void createWiringFromGenome(); // creates .nnet member from .genome member
+    void createWiringFromGenome(uint8_t sensorTypeCount, uint8_t actionTypeCount); // creates .nnet member from .genome member
     // void printNeuralNet() const;
     //! This prints a neural net in a form that can be processed with
     //! graph-nnet.py to produce a graphic illustration of the net.
@@ -119,9 +127,13 @@ private:
     //! Convert the indiv's genome to a renumbered connection list.
     //! This renumbers the neurons from their uint16_t values in the genome
     //! to the range 0..p.maxNumberNeurons - 1 by using a modulo operator.
-    //! Sensors are renumbered 0..Sensor::NUM_SENSES - 1
+    //! Sensors are renumbered 0..Sensors::eType::NUM_SENSES - 1
     //! Actions are renumbered 0..Action::NUM_ACTIONS - 1
-    void makeRenumberedConnectionList(ConnectionList &connectionList, const Genetics::Genome &genome);
+    void makeRenumberedConnectionList(
+        ConnectionList &connectionList, 
+        const Genetics::Genome &genome,
+        uint8_t sensorTypeCount,
+        uint8_t actionTypeCount);
 
     //! Scan the connections and make a list of all the neuron numbers
     //! mentioned in the connections. Also keep track of how many inputs and

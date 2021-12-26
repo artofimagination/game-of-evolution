@@ -1,10 +1,11 @@
 #pragma once
 
+#include "GenerationGenerator.h"
 #include "Grid.h"
 #include "Parameters.h"
 #include "PeepsPool.h"
 #include "PheromoneSignals.h"
-#include "GenerationGenerator.h"
+#include "SysStateMachine.h"
 
 #include <QMetaType>
 #include <QObject>
@@ -13,6 +14,9 @@
 #include <QVariantList>
 
 #include <memory>
+
+class Sensors;
+class Actions;
 
 // This holds all data needed to construct one image frame. The data is
 // cached in this structure so that the image writer can work on it in
@@ -46,7 +50,7 @@ public:
     Q_INVOKABLE QSize GetFrameSize() { return QSize(m_xParameterIO->GetParamRef().sizeX, m_xParameterIO->GetParamRef().sizeY); };
 
     //! Stops the work.
-    Q_INVOKABLE void Stop() { m_Stop = true; }
+    Q_INVOKABLE void StopThread() { m_ThreadStop = true; }
     //! Returns the current challenge id.
     eChallenges GetChallengeId() const;
     //! Returns the current challenge.
@@ -55,6 +59,18 @@ public:
     eBarrierType GetBarrierType() const { return m_BarrierType; };
     //! Returns the barrier vector.
     const std::vector<std::unique_ptr<Barriers::iBarrier> >& GetBarriers() const;
+    //! Returns the sensor names.
+    std::vector<std::string> GetSensorNames() const;
+    //! Returns the action names.
+    std::vector<std::string> GetActionNames() const;
+    //! Updates the sensors actions vectors.
+    void UpdateSensorsActions(const QVariantList& sensors, const QVariantList& actions);
+    //! Starts simulation.
+    void StartSim();
+    //! Stops simulation.
+    void StopSim();
+    //! Reset simulation.
+    void ResetSim();
 
 signals:
     void ParametersUpdated();
@@ -65,6 +81,7 @@ public slots:
     Q_INVOKABLE ImageFrameData GetImageFrameData();
 
 private:
+
     /**********************************************************************************************
     Execute one simStep for one individual.
 
@@ -91,6 +108,10 @@ private:
     **********************************************************************************************/
     void SimStepOnePeep(Peep &indiv, unsigned simStep, RandomUintGenerator& random);
 
+    bool CheckParameters();
+    //! Reset all simulation data
+    void Reset();
+
     /*
     At the end of each sim step, this function is called in single-thread
     mode to take care of several things:
@@ -110,53 +131,26 @@ private:
     //! print some genomic statistics to stdout (if p.updateGraphLog is true).
     void endOfGeneration(unsigned generation);
 
-    /**********************************************************************************
-    Action levels are driven by sensors or internal neurons as connected by an agent's
-    neural net brain. Each agent's neural net is reevaluated once each simulator
-    step (simStep). After evaluating the action neuron outputs, this function is
-    called to execute the actions according to their output levels. This function is
-    called in multi-threaded mode and operates on a single individual while other
-    threads are doing to the same to other peeps.
-
-    Action (their output) values arrive here as floating point values of arbitrary
-    range (because they are the raw sums of zero or more weighted inputs) and will
-    eventually be converted in this function to a probability 0.0..1.0 of actually
-    getting executed.
-
-    For the various possible action neurons, if they are driven by a sufficiently
-    strong level, we do this:
-
-        MOVE_* actions- queue our agent for deferred movement with peeps.queueForMove(); the
-            queue will be executed at the end of the multithreaded loop in a single thread.
-        SET_RESPONSIVENESS action - immediately change indiv.responsiveness to the action
-            level scaled to 0.0..1.0 (because we have exclusive access to this member in
-            our own individual during this function)
-        SET_OSCILLATOR_PERIOD action - immediately change our individual's indiv.oscPeriod
-            to the action level exponentially scaled to 2..2048 (TBD)
-        EMIT_SIGNALn action(s) - immediately increment the signal level at our agent's
-            location using signals.increment() (using a thread-safe call)
-        KILL_FORWARD action - queue the other agent for deferred death with
-            peeps.queueForDeath()
-
-    The deferred movement and death queues will be emptied by the caller at the end of the
-    simulator step by endOfSimStep() in a single thread after all peeps have been
-    evaluated multithreadedly.
-    **********************************************************************************/
-    void executeActions(Peep &peep, std::array<float, SensorsActions::Action::NUM_ACTIONS> &actionLevels);
-
     // Synchronous version, always returns true
     void saveVideoFrameSync(unsigned simStep, unsigned generation);
 
     QReadWriteLock                                    m_Lock;
-    bool                                              m_Stop{false};  ///!< When set to true stop the work.
+    bool                                              m_ThreadStop{false};  ///!< When set to true stop the work.
     ImageFrameData                                    m_UIFrameData{};
 
     std::unique_ptr<RandomUintGenerator>              m_xRandomGenerator{};
     std::unique_ptr<ParameterIO>                      m_xParameterIO{};
     std::unique_ptr<Grid>                             m_xGrid{};
     std::unique_ptr<PheromoneSignals>                 m_xSignals{};
+    std::unique_ptr<Sensors>                          m_xSensors{};
     std::unique_ptr<PeepsPool>                        m_xPeeps{};
+    std::unique_ptr<Actions>                          m_xActions{};
     std::unique_ptr<GenerationGenerator>              m_xGenerationGenerator{};
-    eBarrierType                                      m_BarrierType{};
+    std::unique_ptr<SysStateMachine>                  m_xSysStateMachine{};
+
+    eBarrierType                                      m_BarrierType{eBarrierType::NoBarrier};
     std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};
+    unsigned                                          m_Generation{0};
+    unsigned                                          m_SimStep{0};
+    
 };

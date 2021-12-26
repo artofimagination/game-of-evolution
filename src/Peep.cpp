@@ -23,6 +23,8 @@ void Peep::initialize(
     Coord loc_,
     Genetics::Genome &&genome_,
     RandomUintGenerator& random,
+    uint8_t sensorTypeCount,
+    uint8_t actionTypeCount,
     Grid& grid)
 {
     index = index_;
@@ -37,11 +39,15 @@ void Peep::initialize(
     longProbeDist = m_Params.longProbeDistance;
     challengeBits = (unsigned)false; // will be set true when some task gets accomplished
     genome = std::move(genome_);
-    createWiringFromGenome();
+    createWiringFromGenome(sensorTypeCount, actionTypeCount);
 }
 
 //-------------------------------------------------------------------------
-void Peep::makeRenumberedConnectionList(ConnectionList &connectionList, const Genetics::Genome &genome)
+void Peep::makeRenumberedConnectionList(
+    ConnectionList &connectionList, 
+    const Genetics::Genome &genome,
+    uint8_t sensorTypeCount,
+    uint8_t actionTypeCount)
 {
     connectionList.clear();
     for (auto const &gene : genome) {
@@ -51,13 +57,13 @@ void Peep::makeRenumberedConnectionList(ConnectionList &connectionList, const Ge
         if (conn.sourceType == Genetics::NEURON) {
             conn.sourceNum %= m_Params.maxNumberNeurons;
         } else {
-            conn.sourceNum %= SensorsActions::Sensor::NUM_SENSES;
+            conn.sourceNum %= sensorTypeCount;
         }
 
         if (conn.sinkType == Genetics::NEURON) {
             conn.sinkNum %= m_Params.maxNumberNeurons;
         } else {
-            conn.sinkNum %= SensorsActions::Action::NUM_ACTIONS;
+            conn.sinkNum %= actionTypeCount;
         }
     }
 }
@@ -144,13 +150,13 @@ void Peep::cullUselessNeurons(ConnectionList &connections, NodeMap &nodeMap)
 }
 
 //-------------------------------------------------------------------------
-void Peep::createWiringFromGenome()
+void Peep::createWiringFromGenome(uint8_t sensorTypeCount, uint8_t actionTypeCount)
 {
     NodeMap nodeMap;  // list of neurons and their number of inputs and outputs
     ConnectionList connectionList; // synaptic connections
 
     // Convert the indiv's genome to a renumbered connection list
-    makeRenumberedConnectionList(connectionList, genome);
+    makeRenumberedConnectionList(connectionList, genome, sensorTypeCount, actionTypeCount);
 
     // Make a node (neuron) list from the renumbered connection list
     makeNodeList(nodeMap, connectionList);
@@ -212,13 +218,18 @@ void Peep::createWiringFromGenome()
 }
 
 //-------------------------------------------------------------------------
-std::array<float, SensorsActions::Action::NUM_ACTIONS> Peep::feedForward(unsigned simStep, const PeepsPool& peeps, const PheromoneSignals& pheromoneSignals, RandomUintGenerator& random)
+std::array<float, Actions::eType::NUM_ACTIONS> Peep::feedForward(
+    unsigned simStep,
+    const PeepsPool& peeps,
+    const PheromoneSignals& pheromoneSignals,
+    const Sensors& sensors,
+    RandomUintGenerator& random)
 {
     // This container is used to return values for all the action outputs. This array
     // contains one value per action neuron, which is the sum of all its weighted
     // input connections. The sum has an arbitrary range. Return by value assumes compiler
     // return value optimization.
-    std::array<float, SensorsActions::Action::NUM_ACTIONS> actionLevels;
+    std::array<float, Actions::eType::NUM_ACTIONS> actionLevels;
     actionLevels.fill(0.0); // undriven actions default to value 0.0
 
     // Weighted inputs to each neuron are summed in neuronAccumulators[]
@@ -248,7 +259,7 @@ std::array<float, SensorsActions::Action::NUM_ACTIONS> Peep::feedForward(unsigne
         // The values are summed for now, later passed through a transfer function
         float inputVal;
         if (conn.sourceType == Genetics::SENSOR) {
-            inputVal = SensorsActions::getSensor(*this, peeps, (SensorsActions::Sensor)conn.sourceNum, simStep, m_Grid, m_Params, random, pheromoneSignals);
+            inputVal = sensors.getSensor(*this, peeps, (Sensors::eType)conn.sourceNum, simStep, m_Grid, m_Params, random, pheromoneSignals);
         } else {
             inputVal = nnet.neurons[conn.sourceNum].output;
         }
@@ -293,7 +304,7 @@ void Peep::printIGraphEdgeList() const
 {
     for (auto & conn : nnet.connections) {
         if (conn.sourceType == Genetics::SENSOR) {
-            std::cout << SensorsActions::sensorShortName((SensorsActions::Sensor)(conn.sourceNum));
+            std::cout << SensorsActions::sensorShortName((Sensors::eType)(conn.sourceNum));
         } else {
             std::cout << "N" << std::to_string(conn.sourceNum);
         }
@@ -301,7 +312,7 @@ void Peep::printIGraphEdgeList() const
         std::cout << " ";
 
         if (conn.sinkType == Genetics::ACTION) {
-            std::cout << SensorsActions::actionShortName((SensorsActions::Action)(conn.sinkNum));
+            std::cout << SensorsActions::actionShortName((Actions::eType)(conn.sinkNum));
         } else {
             std::cout << "N" << std::to_string(conn.sinkNum);
         }

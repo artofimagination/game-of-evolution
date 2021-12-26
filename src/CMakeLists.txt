@@ -83,6 +83,8 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/PeepsPool.h
     ${PROJECT_SOURCE_DIR}/PheromoneSignals.cpp
     ${PROJECT_SOURCE_DIR}/PheromoneSignals.h
+    ${PROJECT_SOURCE_DIR}/SysStateMachine.cpp
+    ${PROJECT_SOURCE_DIR}/SysStateMachine.h
     ${PROJECT_SOURCE_DIR}/QMLChallengeItems.h
     ${PROJECT_SOURCE_DIR}/QMLInterface.cpp
     ${PROJECT_SOURCE_DIR}/QMLInterface.h

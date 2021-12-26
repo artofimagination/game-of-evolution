@@ -202,7 +202,6 @@ Item {
             }
 
             for(var i = 0; i < mainview.barrierShapes.length; i++){
-                console.log(barrierShapes[i].position, barrierShapes[i].radius)
                 barrierShapes[i].draw(context)
             }
         }

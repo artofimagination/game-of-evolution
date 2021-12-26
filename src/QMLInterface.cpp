@@ -349,6 +349,38 @@ ImageFrameData QMLInterface::GetImageFrameData()
     return data;
 }
 
+//---------------------------------------------------------------------------
+QVariantList QMLInterface::GetSensorNames()
+{
+    QVariantList uiNames;
+    auto names = m_pBackendWorker->GetSensorNames();
+    for (const auto& name : names)
+    {
+        uiNames.push_back(QString::fromUtf8(name.c_str()));
+    }
+    return uiNames;
+}
+
+//---------------------------------------------------------------------------
+QVariantList QMLInterface::GetActionNames()
+{
+    QVariantList uiNames;
+    auto names = m_pBackendWorker->GetActionNames();
+    for (const auto& name : names)
+    {
+        uiNames.push_back(QString::fromUtf8(name.c_str()));
+    }
+    return uiNames;
+}
+
+//---------------------------------------------------------------------------
+void QMLInterface::UpdateSensorsActions(const QVariantList& sensors, const QVariantList& actions)
+{
+    m_Mutex.lock();
+    m_pBackendWorker->UpdateSensorsActions(sensors, actions);
+    m_Mutex.unlock();
+}
+
 //-------------------------------------------------------------------------
 unsigned QMLInterface::GetChallengeId() const
 {
@@ -365,9 +397,27 @@ unsigned QMLInterface::GetBarrierType() const
 void QMLInterface::Quit()
 {
     std::cout << "Stopping backend..." << std::endl;
-    m_pBackendWorker->Stop();
+    m_pBackendWorker->StopThread();
     m_WorkerThread.quit();
     m_WorkerThread.wait();
+}
+
+//-------------------------------------------------------------------------
+void QMLInterface::StartSim()
+{
+    m_pBackendWorker->StartSim();
+}
+
+//-------------------------------------------------------------------------
+void QMLInterface::StopSim()
+{
+    m_pBackendWorker->StopSim();
+}
+
+//-------------------------------------------------------------------------
+void QMLInterface::ResetSim()
+{
+    m_pBackendWorker->ResetSim();
 }
 
 } // namespace QML

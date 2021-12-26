@@ -53,6 +53,12 @@ public:
     Q_INVOKABLE ImageFrameData GetImageFrameData();
     Q_INVOKABLE QML::CircleBarrierSetup GetCircleBarriers();
     Q_INVOKABLE QML::RectBarrierSetup GetRectBarriers();
+    Q_INVOKABLE QVariantList GetSensorNames();
+    Q_INVOKABLE QVariantList GetActionNames();
+    Q_INVOKABLE void UpdateSensorsActions(const QVariantList& sensors, const QVariantList& actions);
+    Q_INVOKABLE void StartSim();
+    Q_INVOKABLE void StopSim();
+    Q_INVOKABLE void ResetSim();
 private:
 
     //! Enlarge the simulation data.
