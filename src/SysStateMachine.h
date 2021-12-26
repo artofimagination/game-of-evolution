@@ -59,7 +59,7 @@ private:
     };
 
     //! Apply new system state.
-    void ApplyState(std::function<void()> reset);
+    void ApplyState(std::function<void()> reset, std::function<bool()> checkParameters);
     //! Evaluate incoming system actions.
     void CheckSysAction();
     //! Evaluate parameter actions.

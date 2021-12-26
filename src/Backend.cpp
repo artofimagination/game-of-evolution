@@ -2,6 +2,7 @@
 
 #include "AlgorithmHelpers.h"
 #include "BasicTypes.h"
+#include "Challenges/Altruism.h"
 #include "Challenges/iChallenges.h"
 #include "SensorsActions.h"
 
@@ -24,6 +25,7 @@ Backend::Backend()
       *m_xGrid.get(),
       m_xParameterIO->GetParamRef()
   ))
+  , m_xChallenge(std::make_unique<Challenges::Altruism>(*m_xRandomGenerator.get(), m_xParameterIO->GetParamRef()))
   , m_xGenerationGenerator(std::make_unique<GenerationGenerator>(
       *m_xGrid.get(), 
       *m_xPeeps.get(), 
@@ -43,6 +45,10 @@ Backend::Backend()
 bool Backend::CheckParameters()
 {
     auto params = m_xParameterIO->GetParamRef();
+    if(!m_xChallenge)
+    {
+        return false;
+    }
     if (m_Generation >= params.maxGenerations)
     {
         return false;
@@ -75,6 +81,12 @@ void Backend::StopSim()
 void Backend::ResetSim()
 {
     m_xSysStateMachine->UpdateSysAction(SysStateMachine::eSysActions::Reset);
+}
+
+//---------------------------------------------------------------------------
+std::vector<std::string> Backend::GetChallengeNames() const
+{
+    return Challenges::GetChallengeNames();
 }
 
 //---------------------------------------------------------------------------
@@ -131,6 +143,7 @@ void Backend::Run()
 
     auto reset = [this]() { Backend::Reset();} ;
     auto checkParameters = [this]() { return Backend::CheckParameters(); };
+    SetChallengeId(static_cast<unsigned>(m_CurrentChallenge));
 
     while (!m_ThreadStop)
     {
@@ -141,11 +154,9 @@ void Backend::Run()
             static_cast<eBarrierType>(parameters.barrierType),
             m_xSensors->AvailableSensorTypeCount(),
             m_xActions->AvailableActionTypeCount()); // starting population
-            m_xGenerationGenerator->SetStartChallenge(static_cast<eChallenges>(parameters.challenge));
         }
 
         m_BarrierType = static_cast<eBarrierType>(parameters.barrierType);
-        m_xGenerationGenerator->SetChallenge(static_cast<eChallenges>(parameters.challenge));
         while (!m_ThreadStop && m_xSysStateMachine->GenerationRunning()) { // generation loop
             unsigned murderCount = 0; // for reporting purposes
             for (unsigned simStep = 0; simStep < parameters.stepsPerGeneration && m_xSysStateMachine->SimStepRunning(); ++simStep) {
@@ -169,6 +180,7 @@ void Backend::Run()
                 m_xGenerationGenerator->spawnNewGeneration(
                     m_Generation,
                     murderCount,
+                    m_xChallenge.get(),
                     m_xSensors->AvailableSensorTypeCount(),
                     m_xActions->AvailableActionTypeCount());
             if (numberSurvivors > 0 && (m_Generation % parameters.genomeAnalysisStride == 0)) {
@@ -180,7 +192,7 @@ void Backend::Run()
                 ++m_Generation;
             }
         }
-        Genetics::displaySampleGenomes(3, *m_xPeeps.get(), parameters); // final report, for debugging
+        //Genetics::displaySampleGenomes(3, *m_xPeeps.get(), parameters); // final report, for debugging
     }
 }
 
@@ -196,10 +208,9 @@ void Backend::SimStepOnePeep(Peep &peep, unsigned simStep, RandomUintGenerator& 
 void Backend::endOfSimStep(unsigned simStep, unsigned generation)
 {
     auto params = m_xParameterIO->GetParamRef();
-    auto pChallenge = m_xGenerationGenerator->GetChallenge();
     auto settings = Challenges::Settings();
     settings.simStep = simStep;
-    pChallenge->EvaluateAtEndOfSimStep(*m_xPeeps.get(), m_xParameterIO->GetParamRef(), *m_xGrid.get(), settings);
+    m_xChallenge->EvaluateAtEndOfSimStep(*m_xPeeps.get(), m_xParameterIO->GetParamRef(), *m_xGrid.get(), settings);
 
     m_xPeeps->drainDeathQueue();
     m_xPeeps->drainMoveQueue();
@@ -280,13 +291,26 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
 //---------------------------------------------------------------------------
 eChallenges Backend::GetChallengeId() const
 {
-    return m_xGenerationGenerator->GetChallengeId();
+    return m_CurrentChallenge;
+}
+
+//---------------------------------------------------------------------------
+void Backend::SetChallengeId(unsigned id)
+{
+    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::InitSensorsActions);
+    m_CurrentChallenge = static_cast<eChallenges>(id);
+    m_xChallenge = 
+        std::unique_ptr<Challenges::iChallenge>(Challenges::CreateChallenge(
+            m_CurrentChallenge,
+            *m_xRandomGenerator.get(),
+            m_xParameterIO->GetParamRef()));
+    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::FinishAction);
 }
 
 //---------------------------------------------------------------------------
 Challenges::iChallenge* Backend::GetChallenge() const
 {
-    return m_xGenerationGenerator->GetChallenge();
+    return m_xChallenge.get();
 }
 
 //---------------------------------------------------------------------------

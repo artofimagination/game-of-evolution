@@ -2,7 +2,6 @@
 
 #include "AlgorithmHelpers.h"
 #include "Barriers/iBarriers.h"
-#include "Challenges/Altruism.h"
 #include "Challenges/iChallenges.h"
 #include "Grid.h"
 #include "Parameters.h"
@@ -29,28 +28,10 @@ GenerationGenerator::GenerationGenerator(
     , m_PheromoneSignals(pheromones)
     , m_Params(params)
     , m_Random(random)
-    , m_xChallenge(std::make_unique<Challenges::Altruism>(m_Random, m_Params))
     , m_BarrierType(barrierType)
     , m_Barriers(barriers)
 {
     
-}
-
-//-------------------------------------------------------------------------
-void GenerationGenerator::SetChallenge(eChallenges challenge)
-{
-    if(m_CurrentChallenge != challenge)
-    {
-        m_xChallenge = std::unique_ptr<Challenges::iChallenge>(Challenges::CreateChallenge(challenge, m_Random, m_Params));
-        m_CurrentChallenge = challenge;
-    }
-}
-
-//-------------------------------------------------------------------------
-void GenerationGenerator::SetStartChallenge(eChallenges challenge)
-{
-    m_xChallenge = std::unique_ptr<Challenges::iChallenge>(Challenges::CreateChallenge(challenge, m_Random, m_Params));
-    m_CurrentChallenge = challenge;
 }
 
 //-------------------------------------------------------------------------
@@ -189,6 +170,7 @@ void GenerationGenerator::initializeNewGeneration(
 unsigned GenerationGenerator::spawnNewGeneration(
     unsigned generation,
     unsigned murderCount,
+    Challenges::iChallenge* pChallenge,
     uint8_t sensorTypeCount,
     uint8_t actionTypeCount)
 {
@@ -199,7 +181,7 @@ unsigned GenerationGenerator::spawnNewGeneration(
     std::vector<Genetics::Genome> parentGenomes;
     // This container will hold the indexes and survival scores (0.0..1.0)
     // of all the survivors who will provide genomes for repopulation.
-    std::vector<std::pair<uint16_t, float>> parents = m_xChallenge->EvaluateWhenNewGeneration(
+    std::vector<std::pair<uint16_t, float>> parents = pChallenge->EvaluateWhenNewGeneration(
         m_PeepsPool,
         m_Params,
         m_Grid,

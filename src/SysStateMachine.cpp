@@ -52,12 +52,6 @@ void SysStateMachine::Evaluate(
     std::function<bool()> checkParameters,
     std::function<void()> reset)
 {
-
-    if (!checkParameters())
-    {
-        m_NewSysState = eSysStates::Stopped;
-    }
-
     if (m_SysAction == eSysActions::Idle && 
         m_ParameterAction == eParameterActions::Idle &&
         m_NewSysState == m_CurrentSysState)
@@ -66,11 +60,11 @@ void SysStateMachine::Evaluate(
 
     CheckParamAction();
     CheckSysAction();
-    ApplyState(reset);
+    ApplyState(reset, checkParameters);
 }
 
 //-------------------------------------------------------------------------
-void SysStateMachine::ApplyState(std::function<void()> reset)
+void SysStateMachine::ApplyState(std::function<void()> reset, std::function<bool()> checkParameters)
 {
     if (m_CurrentSysState == m_NewSysState)
         return;
@@ -84,6 +78,12 @@ void SysStateMachine::ApplyState(std::function<void()> reset)
         m_ParameterAction = eParameterActions::Idle;
         break;
     case eSysStates::Running:
+        if (!checkParameters())
+        {
+            m_NewSysState = eSysStates::Stopped;
+            ApplyState(nullptr, checkParameters);
+            break;
+        }
         m_RunSimStep = true;
         m_RunGeneration = true;
         m_SysAction = eSysActions::Idle;
@@ -96,22 +96,21 @@ void SysStateMachine::ApplyState(std::function<void()> reset)
             {
                 m_NewSysState = eSysStates::Failing;
                 m_Error += "\nreset() is null, corrupt state.";
-                ApplyState(nullptr);
             }
             else
             { 
                 m_NewSysState = eSysStates::Stopped;
-                ApplyState(nullptr);
+                ApplyState(nullptr, checkParameters);
                 reset();
                 m_NewSysState = eSysStates::Running;
-                ApplyState(nullptr);
+                ApplyState(nullptr, checkParameters);
             }
         }
         if (m_ParameterAction == eParameterActions::InitSensorsActions ||
             m_ParameterAction == eParameterActions::InitChallenge)
         {
             m_NewSysState = eSysStates::Stopped;
-            ApplyState(nullptr);
+            ApplyState(nullptr, checkParameters);
         }
         break;
     case eSysStates::Failing:

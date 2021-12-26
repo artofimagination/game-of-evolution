@@ -53,6 +53,8 @@ public:
     Q_INVOKABLE void StopThread() { m_ThreadStop = true; }
     //! Returns the current challenge id.
     eChallenges GetChallengeId() const;
+    //! Set challenge id.
+    void SetChallengeId(unsigned id);
     //! Returns the current challenge.
     Challenges::iChallenge* GetChallenge() const;
     //! Returns the barrier type.
@@ -71,6 +73,8 @@ public:
     void StopSim();
     //! Reset simulation.
     void ResetSim();
+    //! Returns all challenge names.
+    std::vector<std::string> GetChallengeNames() const;
 
 signals:
     void ParametersUpdated();
@@ -145,8 +149,10 @@ private:
     std::unique_ptr<Sensors>                          m_xSensors{};
     std::unique_ptr<PeepsPool>                        m_xPeeps{};
     std::unique_ptr<Actions>                          m_xActions{};
+    std::unique_ptr<Challenges::iChallenge>           m_xChallenge{};
     std::unique_ptr<GenerationGenerator>              m_xGenerationGenerator{};
     std::unique_ptr<SysStateMachine>                  m_xSysStateMachine{};
+    eChallenges                                       m_CurrentChallenge{eChallenges::Altruism};
 
     eBarrierType                                      m_BarrierType{eBarrierType::NoBarrier};
     std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};

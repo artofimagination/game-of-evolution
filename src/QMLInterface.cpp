@@ -388,6 +388,12 @@ unsigned QMLInterface::GetChallengeId() const
 };
 
 //-------------------------------------------------------------------------
+void QMLInterface::SetChallengeId(unsigned id)
+{
+    m_pBackendWorker->SetChallengeId(id); 
+};
+
+//-------------------------------------------------------------------------
 unsigned QMLInterface::GetBarrierType() const
 {
     return static_cast<unsigned>(m_pBackendWorker->GetBarrierType()); 
@@ -418,6 +424,18 @@ void QMLInterface::StopSim()
 void QMLInterface::ResetSim()
 {
     m_pBackendWorker->ResetSim();
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetChallengeNames()
+{
+    QVariantList uiNames;
+    auto names = m_pBackendWorker->GetChallengeNames();
+    for (const auto& name : names)
+    {
+        uiNames.push_back(QString::fromUtf8(name.c_str()));
+    }
+    return uiNames;
 }
 
 } // namespace QML

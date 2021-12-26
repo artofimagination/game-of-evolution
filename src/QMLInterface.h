@@ -32,6 +32,7 @@ public:
 
     Q_INVOKABLE void Quit();
     Q_INVOKABLE unsigned GetChallengeId() const;
+    Q_INVOKABLE void SetChallengeId(unsigned id);
     Q_INVOKABLE unsigned GetBarrierType() const;
     Q_INVOKABLE QML::AltruismSetup GetAltruismSetup();
     Q_INVOKABLE QML::CircleSetup GetCircleSetup();
@@ -59,6 +60,7 @@ public:
     Q_INVOKABLE void StartSim();
     Q_INVOKABLE void StopSim();
     Q_INVOKABLE void ResetSim();
+    Q_INVOKABLE QVariantList GetChallengeNames();
 private:
 
     //! Enlarge the simulation data.

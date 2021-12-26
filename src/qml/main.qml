@@ -103,7 +103,7 @@ Rectangle {
         }
     }
 
-    function setSensorsActionsList()
+    function setUI()
     {
         var names = backendInterface.GetSensorNames()
         for(var i = 0; i < names.length; i++){
@@ -116,6 +116,11 @@ Rectangle {
             actionModel.model.append({name:names[i], selected: false})
         }
         actionsScroll.contentHeight = actionModel.model.count * actionModel.itemHeight
+
+        var names = backendInterface.GetChallengeNames()
+        for(var i = 0; i < names.length; i++){
+            challengeComboBox.model.append({name:names[i]})
+        }
     }
 
     function updateUiData() {
@@ -125,6 +130,7 @@ Rectangle {
         var imageData = backendInterface.GetImageFrameData()
         simulatorCanvas.createPeeps(imageData.peepsPositions, imageData.peepsColors)
         setChallengeItems(challenge)
+        challengeComboBox.currentIndex = challenge
         setBarriers(barrierType)
 
         generation.text = "Generation " + imageData.generation
@@ -431,6 +437,29 @@ Rectangle {
                 }
             }
         }
+        Frame {
+            id: challenges
+            anchors.left: settingsFrame.right
+            anchors.top: simulatorWindow.top
+            anchors.leftMargin: 50
+            anchors.topMargin: 20
+            Column {
+                Text {
+                    text: "Challenges:"
+                    font.pointSize: 16
+                    font.bold: true
+                }
+
+                ComboBox {
+                  id: challengeComboBox
+                  model: ListModel {}
+                  onActivated: {
+                      backendInterface.SetChallengeId(challengeComboBox.currentIndex)
+                      setChallengeItems(challengeComboBox.currentIndex)
+                  }
+                }
+            }
+        }
     }
 
     Button {
@@ -447,6 +476,6 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        mainPage.setSensorsActionsList()
+        mainPage.setUI()
     }
 }

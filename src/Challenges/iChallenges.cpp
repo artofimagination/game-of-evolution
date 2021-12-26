@@ -144,4 +144,78 @@ iChallenge* CreateChallenge(
     return new Altruism(random, params);
 }
 
+//-------------------------------------------------------------------------
+std::vector<std::string> GetChallengeNames()
+{
+    std::vector<std::string> names{};
+    for(eChallenges challenge = eChallenges::Circle; challenge < eChallenges::NoOfChallenges; challenge = static_cast<eChallenges>((size_t)challenge + 1))
+    {
+        switch(challenge) {
+            case eChallenges::Circle:
+                names.push_back("Circle");
+                break;
+            case eChallenges::RightHalf:
+                names.push_back("RightHalf");
+                break;
+            case eChallenges::RightQuarter:
+                names.push_back("RightQuarter");
+                break;
+            case eChallenges::LeftEighth:
+                names.push_back("LeftEighth");
+                break;
+            case eChallenges::NeighborCount:
+                names.push_back("NeighborCount");
+                break;
+            case eChallenges::CenterWeighted:
+                names.push_back("CenterWeighted");
+                break;
+            case eChallenges::CenterUnweighted:
+                names.push_back("CenterUnweighted");
+                break;
+            case eChallenges::CenterSparsed:
+                names.push_back("CenterSparsed");
+                break;
+            case eChallenges::Corner:
+                names.push_back("Corner");
+                break;
+            case eChallenges::CornerWeighted:
+                names.push_back("CornerWeighted");
+                break;
+            case eChallenges::RadioActiveWalls:
+                names.push_back("RadioActiveWalls");
+                break;
+            case eChallenges::AgainstAnyWall:
+                names.push_back("AgainstAnyWall");
+                break;
+            case eChallenges::TouchAnyWall:
+                names.push_back("TouchAnyWall");
+                break;
+            case eChallenges::MigrateDistance:
+                names.push_back("MigrateDistance");
+                break;
+            case eChallenges::EastWestEighths:
+                names.push_back("EastWestEighths");
+                break;
+            case eChallenges::NearBarrier:
+                names.push_back("NearBarrier");
+                break;
+            case eChallenges::Pairs:
+                names.push_back("Pairs");
+                break;
+            case eChallenges::LocationSequence:
+                names.push_back("LocationSequence");
+                break;
+            case eChallenges::AltruismSacrifice:
+                names.push_back("AltruismSacrifice");
+                break;
+            case eChallenges::Altruism:
+                names.push_back("Altruism");
+                break;
+            default:
+                assert(false);
+        }
+    }
+    return names;
+}
+
 } // namespace Challenges

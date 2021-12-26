@@ -13,6 +13,11 @@ class PeepsPool;
 class PheromoneSignals;
 class RandomUintGenerator;
 
+namespace Challenges
+{
+    class iChallenge;
+}
+
 class GenerationGenerator
 {
 
@@ -47,20 +52,9 @@ public:
     unsigned spawnNewGeneration(
         unsigned generation,
         unsigned murderCount,
+        Challenges::iChallenge* pChallenge,
         uint8_t sensorTypeCount,
         uint8_t actionTypeCount);
-
-    //! Creates a new challenge object if there is a challenge change.
-    void SetChallenge(eChallenges challenge);
-    //! Creates the first challenge object before the simulation starts.
-    void SetStartChallenge(eChallenges challenge);
-
-    //! Returns the current challenge id.
-    eChallenges GetChallengeId() const { return m_CurrentChallenge; }
-
-    //! Returns the current challenge.
-    Challenges::iChallenge* GetChallenge() const { return m_xChallenge.get(); }
-
 private:
     // Returns by value a single genome with random genes.
     Genetics::Genome makeRandomGenome();
@@ -91,8 +85,6 @@ private:
     PheromoneSignals&                                   m_PheromoneSignals;
     const Parameters&                                   m_Params;
     RandomUintGenerator&                                m_Random;
-    std::unique_ptr<Challenges::iChallenge>             m_xChallenge{};
-    eChallenges                                         m_CurrentChallenge{eChallenges::Altruism};
     const eBarrierType&                                 m_BarrierType;
     std::vector<std::unique_ptr<Barriers::iBarrier> >&  m_Barriers;
 };

@@ -86,4 +86,7 @@ iChallenge* CreateChallenge(
     RandomUintGenerator& random,
     const Parameters& params);
 
+//! Returns all challenge names.
+std::vector<std::string> GetChallengeNames();
+
 } // namespace Challenges
