@@ -6,7 +6,7 @@
 * [Quick Guide](quick-guide)<br>
 
 # Game of Evolution
-This is a for from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)<br>
+This is a fork from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)<br>
 Main branch of this repo is _game_of_evolution_. _main_ is the maintenance branch to grab upstream changes from the original biosim4 repo.<br><br>
 
 This repo has a major overhaul of the code into a new structure. The core logic has not been changed and will be kept in original-biosim4-core branch, for the keen users, who wants to have the same behavior as the original biosim4 repo, but with a UI interface.<br>
