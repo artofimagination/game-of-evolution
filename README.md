@@ -1,3 +1,10 @@
+# Content
+* [Intro](#intro)<br>
+* [Purpose of the fork](#purpose-of-the-fork)<br>
+* [Setup](#setup)<br>
+* [Troubleshooting](troubleshooting)<br>
+* [Quick Guide](quick-guide)<br>
+
 # Game of Evolution
 This is a for from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)
 
@@ -5,13 +12,6 @@ This repo has a major overhaul of the code into a new structure. The core logic 
 TODO:
   - Video generation feature is not yet migrated and is not working at the moment
   - There is no logging migrated yet, so it is not functional either
-
-# Content
-* [Intro](#intro)<br>
-* [Purpose of the fork](#purpose-of-the-fork)<br>
-* [Setup](#setup)<br>
-* [Troubleshooting](troubleshooting)<br>
-* [Quick Guide](quick-guide)<br>
 
 Current look of the UI
 ![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg1.png)
