@@ -1,9 +1,19 @@
 # Game of Evolution
 This is a for from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)
 
-At the moment the backend logic is identical to the original biosim4 repository.
+This repo has a major overhaul of the code into a new structure. The core logic has not been changed and will be kept in original-biosim4-core branch, for the keen users, who wants to have the same behavior as the original biosim4 repo, but with a UI interface.
+TODO:
+  - Video generation feature is not yet migrated and is not working at the moment
+  - There is no logging migrated yet, so it is not functional either
 
-Initial look of the UI
+# Content
+* [Intro](#intro)<br>
+* [Purpose of the fork](#purpose-of-the-fork)<br>
+* [Setup](#setup)<br>
+* [Troubleshooting](troubleshooting)<br>
+* [Quick Guide](quick-guide)<br>
+
+Current look of the UI
 ![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg1.png)
 
 # Intro
@@ -40,3 +50,33 @@ Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, 
 ```
 
 The container shall be configured by the ```devcontainer.json``` to enable X11 forwarding, so most likley you forgot to run ```xhost local:docker``` in the host system command line.
+
+# Quick Guide
+## Main page
+There is only a single main page at the moment. If you are interested in the backend of the system, checkout [biosim4](https://github.com/davidrmiller/biosim4)<br>
+![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg1.png)
+
+* **World Canvas** - canvas to visualize the peeps (entities of this world), challenge layer and barriers
+* **Tabs** - There are three tabs available for now. _Details_, _Analytics_, _Neural Network_
+
+## Detail Tab
+* **Details** - gives details about the simulation (there will be more over time)
+     - _Generation_ - current generation count
+     - _Sim Step_ - current simulation step
+     - _Max Population_ - the maximum allowed population
+
+* **Settings** - allows to configure the simulation
+     - _Sensors_ - the user can select one or more sensors. Only the selected ones will be used during the genome generation
+     - _Actions_ - the user can select one or more actions. Only the selected ones will be used during the genome generation
+     - _Update_ - Sensor action changes will apply ony if Update is pressed. This also will reset and restart the simulation
+* **Challenges** - challenges selector. When a new challenge is selected the simulation and analytics will restart.
+
+![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg2.png)
+
+## Analytics Tab
+Allows the user to check some statistics. At the moment only a few analytics are available and are displayed in a single line chart (single analytics on the same chart).
+
+![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg3.png)
+
+## Neural Network Tab
+Displays the neural network. **TBD**
