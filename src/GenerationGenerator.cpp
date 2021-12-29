@@ -1,6 +1,7 @@
 #include "GenerationGenerator.h"
 
 #include "AlgorithmHelpers.h"
+#include "Analytics.h"
 #include "Barriers/iBarriers.h"
 #include "Challenges/iChallenges.h"
 #include "Grid.h"
@@ -11,13 +12,13 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
-#include <iostream>
 
 
 //-------------------------------------------------------------------------
 GenerationGenerator::GenerationGenerator(
     Grid& grid,
     PeepsPool& peepsPool,
+    Analytics& analytics,
     PheromoneSignals& pheromones,
     const Parameters& params,
     RandomUintGenerator& random,
@@ -25,6 +26,7 @@ GenerationGenerator::GenerationGenerator(
     std::vector<std::unique_ptr<Barriers::iBarrier> >& barriers)
     : m_Grid(grid)
     , m_PeepsPool(peepsPool)
+    , m_Analytics(analytics)
     , m_PheromoneSignals(pheromones)
     , m_Params(params)
     , m_Random(random)
@@ -97,7 +99,6 @@ Genetics::Genome GenerationGenerator::generateChildGenome(const std::vector<Gene
     const Genetics::Genome &g2 = parentGenomes[parent2Idx];
 
     if (g1.empty() || g2.empty()) {
-        std::cout << "invalid genome" << std::endl;
         assert(false);
     }
 
@@ -200,7 +201,9 @@ unsigned GenerationGenerator::spawnNewGeneration(
         parentGenomes.push_back(m_PeepsPool[parent.first].genome);
     }
 
-    std::cout << "Gen " << generation << ", " << parentGenomes.size() << " survivors" << std::endl;
+    m_Analytics.AddSurvivorCount(parentGenomes.size());
+    m_Analytics.AddGenDiveristyCount(Genetics::geneticDiversity(m_PeepsPool, m_Random, m_Params));
+
     appendEpochLog(generation, parentGenomes.size(), murderCount);
     //displaySignalUse(); // for debugging only
 
@@ -219,7 +222,7 @@ unsigned GenerationGenerator::spawnNewGeneration(
 }
 
 // The epoch log contains one line per generation in a format that can be.
-void GenerationGenerator::appendEpochLog(unsigned generation, unsigned numberSurvivors, unsigned murderCount)
+void GenerationGenerator::appendEpochLog(unsigned generation, unsigned /*numberSurvivors*/, unsigned /*murderCount*/)
 {
     std::ofstream foutput;
 
@@ -230,10 +233,10 @@ void GenerationGenerator::appendEpochLog(unsigned generation, unsigned numberSur
 
     foutput.open(m_Params.logDir + "/epoch-log.txt", std::ios::app);
 
-    if (foutput.is_open()) {
-        foutput << generation << " " << numberSurvivors << " " << Genetics::geneticDiversity(m_PeepsPool, m_Random, m_Params)
-                << " " << Genetics::averageGenomeLength(m_PeepsPool, m_Random, m_Params) << " " << murderCount << std::endl;
-    } else {
-        assert(false);
-    }
+    // if (foutput.is_open()) {
+    //     foutput << generation << " " << numberSurvivors << " " << Genetics::geneticDiversity(m_PeepsPool, m_Random, m_Params)
+    //             << " " << Genetics::averageGenomeLength(m_PeepsPool, m_Random, m_Params) << " " << murderCount << std::endl;
+    // } else {
+    //     assert(false);
+    // }
 }

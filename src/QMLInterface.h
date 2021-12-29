@@ -22,18 +22,32 @@ class QMLInterface : public QObject
     Q_OBJECT
     Q_PROPERTY(QML::AltruismSetup altruismSetup READ GetAltruismSetup)
     Q_PROPERTY(unsigned challengeId READ GetChallengeId)
-    Q_PROPERTY(ImageFrameData imageData READ GetImageFrameData)
+    Q_PROPERTY(WorldData imageData READ GetWorldData)
 public:
 
     //! Starts the backend thread.
     Q_INVOKABLE QObject* StartBackend();
-
-    Q_INVOKABLE int UiScale() { return cUiScaling; }
-
+    //! Requests a simulation start from QML UI.
+    Q_INVOKABLE void StartSim();
+    //! Requests a Simulation stop from QML UI.
+    Q_INVOKABLE void StopSim();
+    //! Requests a simulation reset from QML UI.
+    Q_INVOKABLE void ResetSim();
+    //! Shuts down the back end thread when quit is requested from QML UI.
     Q_INVOKABLE void Quit();
+
+    //! The world is a low resolution canvas. In order the get a UI friendly representation scaling is applied
+    Q_INVOKABLE int UiScale() const { return cUiScaling; }
+    //! Returns the raw world size.
+    Q_INVOKABLE QSize GetFrameSize() const;
+
     Q_INVOKABLE unsigned GetChallengeId() const;
     Q_INVOKABLE void SetChallengeId(unsigned id);
-    Q_INVOKABLE unsigned GetBarrierType() const;
+    //! Returns the world data of the current simulation step.
+    Q_INVOKABLE WorldData GetWorldData();
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //! QML invokable getters for challenge UI setups
     Q_INVOKABLE QML::AltruismSetup GetAltruismSetup();
     Q_INVOKABLE QML::CircleSetup GetCircleSetup();
     Q_INVOKABLE QML::AnyWallSetup GetAgainstAnyWallSetup();
@@ -51,24 +65,33 @@ public:
     Q_INVOKABLE QML::RectangleSetup GetLeftEighthSetup();
     Q_INVOKABLE QML::NeighborCountSetup GetNeighborCountSetup();
     Q_INVOKABLE QML::CircleSetup GetAltruismSacrificeSetup();
-    Q_INVOKABLE ImageFrameData GetImageFrameData();
+    ///////////////////////////////////////////////////////////////////////////////
+    
+    ///////////////////////////////////////////////////////////////////////////////
+    //! QML invokable gettes for barrier UI setups
+    Q_INVOKABLE unsigned GetBarrierType() const;
     Q_INVOKABLE QML::CircleBarrierSetup GetCircleBarriers();
     Q_INVOKABLE QML::RectBarrierSetup GetRectBarriers();
+    ///////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //! QML invokable getters for various configs/details/analytics
     Q_INVOKABLE QVariantList GetSensorNames();
     Q_INVOKABLE QVariantList GetActionNames();
     Q_INVOKABLE void UpdateSensorsActions(const QVariantList& sensors, const QVariantList& actions);
-    Q_INVOKABLE void StartSim();
-    Q_INVOKABLE void StopSim();
-    Q_INVOKABLE void ResetSim();
-    Q_INVOKABLE QVariantList GetChallengeNames();
+    Q_INVOKABLE QVariantList GetChallengeNames() const;
+    Q_INVOKABLE QVariantList GetSurvivors() const;
+    Q_INVOKABLE QVariantList GetGeneticDiversity() const;
+    Q_INVOKABLE QVariantList GetAnalyticsNames() const;
+    ///////////////////////////////////////////////////////////////////////////////
 private:
 
     //! Enlarge the simulation data.
     const int cUiScaling = 6;
 
     QMutex      m_Mutex;
-    QThread     m_WorkerThread;
-    Backend*    m_pBackendWorker;
+    QThread     m_WorkerThread;     ///< Worker thread.
+    Backend*    m_pBackendWorker;   ///< Pointer to the backend worker
 };
 
 } // namespace QML

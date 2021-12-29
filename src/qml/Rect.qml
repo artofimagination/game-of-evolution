@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+//! Component responsible for storing and drawing rectangle data.
 Component{
     id: rectComponent
     Item{

@@ -4,7 +4,7 @@ project(GameOfEvolution)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 # Find qml and qt packages. 
-find_package(Qt5 COMPONENTS Qml Quick 3DQuick Widgets 3DQuickExtras REQUIRED)
+find_package(Qt5 COMPONENTS Charts Qml Quick 3DQuick Widgets 3DQuickExtras  REQUIRED)
 find_package(OpenMP)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -13,6 +13,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/AlgorithmHelpers.cpp
     ${PROJECT_SOURCE_DIR}/AlgorithmHelpers.h
+    ${PROJECT_SOURCE_DIR}/Analytics.cpp
+    ${PROJECT_SOURCE_DIR}/Analytics.h
     ${PROJECT_SOURCE_DIR}/App.cpp
     ${PROJECT_SOURCE_DIR}/App.h
     ${PROJECT_SOURCE_DIR}/Backend.cpp
@@ -85,6 +87,8 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/PheromoneSignals.h
     ${PROJECT_SOURCE_DIR}/SysStateMachine.cpp
     ${PROJECT_SOURCE_DIR}/SysStateMachine.h
+    ${PROJECT_SOURCE_DIR}/qml/ChartsConnector.cpp
+    ${PROJECT_SOURCE_DIR}/qml/ChartsConnector.h
     ${PROJECT_SOURCE_DIR}/QMLChallengeItems.h
     ${PROJECT_SOURCE_DIR}/QMLInterface.cpp
     ${PROJECT_SOURCE_DIR}/QMLInterface.h
@@ -101,6 +105,7 @@ set(QT_LIBRARIES
         Qt5::Qml
         Qt5::Network # Need to include QtQuick depends on it, causing missing shared library issue during deployment
         Qt5::Quick
+        Qt5::Charts
         OpenMP::OpenMP_CXX) # for critical section and parallel execution
 
 set(LIBRARIES ${LIBRARIES} ${QT_LIBRARIES})

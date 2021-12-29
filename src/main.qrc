@@ -5,5 +5,7 @@
         <file>qml/Peep.qml</file>
         <file>qml/Circle.qml</file>
         <file>qml/Rect.qml</file>
+        <file>qml/Details.qml</file>
+        <file>qml/Analytics.qml</file>
     </qresource>
 </RCC>

@@ -5,7 +5,7 @@
 #include "Genome.h"
 #include "PheromoneSignals.h"
 
-
+class Analytics;
 class Grid;
 class Parameters;
 class Peep;
@@ -25,6 +25,7 @@ public:
     GenerationGenerator(
         Grid& grid,
         PeepsPool& peepsPool,
+        Analytics& analytics,
         PheromoneSignals& pheromones,
         const Parameters& params,
         RandomUintGenerator& random,
@@ -82,6 +83,7 @@ private:
 
     Grid&                                               m_Grid;
     PeepsPool&                                          m_PeepsPool;
+    Analytics&                                          m_Analytics;
     PheromoneSignals&                                   m_PheromoneSignals;
     const Parameters&                                   m_Params;
     RandomUintGenerator&                                m_Random;

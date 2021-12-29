@@ -33,6 +33,7 @@ QObject* QMLInterface::StartBackend()
     std::cout << "Starting backend..." << std::endl;
     qmlRegisterUncreatableType<QML::Challenge>("backendGuiInterface", 1, 0, "Challenge", "Not creatable as it is an enum type");
     qmlRegisterUncreatableType<QML::Barrier>("backendGuiInterface", 1, 0, "Barrier", "Not creatable as it is an enum type");
+    qmlRegisterUncreatableType<QML::AnalyticsTypes>("backendGuiInterface", 1, 0, "AnalyticsTypes", "Not creatable as it is an enum type");
     qRegisterMetaType<QML::AltruismSetup>("AltruismSetup");
     qRegisterMetaType<QML::CircleSetup>("CircleSetup");
     qRegisterMetaType<QML::CornerSetup>("CornerSetup");
@@ -341,10 +342,10 @@ QML::RectBarrierSetup QMLInterface::GetRectBarriers()
 }
 
 //---------------------------------------------------------------------------
-ImageFrameData QMLInterface::GetImageFrameData()
+WorldData QMLInterface::GetWorldData()
 {
     m_Mutex.lock();
-    auto data = m_pBackendWorker->GetImageFrameData();
+    auto data = m_pBackendWorker->GetWorldData();
     m_Mutex.unlock();
     return data;
 }
@@ -427,7 +428,7 @@ void QMLInterface::ResetSim()
 }
 
 //-------------------------------------------------------------------------
-QVariantList QMLInterface::GetChallengeNames()
+QVariantList QMLInterface::GetChallengeNames() const
 {
     QVariantList uiNames;
     auto names = m_pBackendWorker->GetChallengeNames();
@@ -436,6 +437,54 @@ QVariantList QMLInterface::GetChallengeNames()
         uiNames.push_back(QString::fromUtf8(name.c_str()));
     }
     return uiNames;
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetSurvivors() const
+{
+    QVariantList lineGraphs{};
+    QList<QVariant> survivorsUI{};
+    auto survivors = m_pBackendWorker->GetSurvivors();
+    for (size_t i = 0; i < survivors.second.size(); ++i)
+    {
+        survivorsUI.push_back(QPointF(survivors.first + i, survivors.second.at(i)));
+    }
+    lineGraphs.push_back(survivorsUI);
+    return lineGraphs;
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetGeneticDiversity() const
+{
+    QVariantList lineGraphs{};
+    QList<QVariant> dataUI{};
+    auto dataVector = m_pBackendWorker->GetGeneticDiversity();
+    for (size_t i = 0; i < dataVector.second.size(); ++i)
+    {
+        auto y = dataVector.second.at(i);
+        dataUI.push_back(QPointF(dataVector.first + i, y));
+    }
+    lineGraphs.push_back(dataUI);
+    return lineGraphs;
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetAnalyticsNames() const
+{
+    QVariantList uiNames;
+    auto names = m_pBackendWorker->GetAnalyticsTypes();
+    for (const auto& name : names)
+    {
+        uiNames.push_back(QString::fromUtf8(name.c_str()));
+    }
+    return uiNames;
+}
+
+//-------------------------------------------------------------------------
+QSize QMLInterface::GetFrameSize() const
+{
+    auto size = m_pBackendWorker->GetFrameSize();
+    return QSize(size.first, size.second);
 }
 
 } // namespace QML

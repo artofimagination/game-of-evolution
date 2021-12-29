@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Challenges/iChallenges.h"
+#include "Analytics.h"
 #include "Barriers/iBarriers.h"
+#include "Challenges/iChallenges.h"
 
 #include <QColor>
 #include <QMetaType>
@@ -12,6 +13,8 @@
 namespace QML
 {
 
+//! QML enums for challenges, it is always identical to the corresponding backend enum
+//! If not a compile time asert wil happen
 class Challenge
 {
     Q_GADGET
@@ -45,6 +48,8 @@ public:
     static_assert(static_cast<unsigned>(QML::Challenge::Value::NoOfChallenges) == static_cast<unsigned>(eChallenges::NoOfChallenges));
 };
 
+//! QML enums for barriers, it is always identical to the corresponding backend enum
+//! If not a compile time asert wil happen
 class Barrier
 {
     Q_GADGET
@@ -64,6 +69,24 @@ public:
     static_assert(static_cast<unsigned>(QML::Barrier::Value::NoOfTypes) == static_cast<unsigned>(eBarrierType::NoOfTypes));
 };
 
+//! QML enums for analytics types, it is always identical to the corresponding backend enum
+//! If not a compile time asert wil happen
+class AnalyticsTypes
+{
+    Q_GADGET
+public:
+    enum class Value : uint8_t
+    {
+        Survivors,
+        GeneticDiversity,
+        NoOfAnalytics
+    };
+    Q_ENUM(Value)
+    static_assert(static_cast<unsigned>(QML::AnalyticsTypes::Value::NoOfAnalytics) == static_cast<unsigned>(Analytics::eType::NoOfAnalytics));
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//! QML compatible structures for challenges and barriers
 struct AltruismSetup
 {
     Q_GADGET
@@ -203,5 +226,6 @@ public:
     Q_PROPERTY(float circleBarrierRadius MEMBER radius)
     Q_PROPERTY(QColor circleBarrierColor MEMBER color)
 };
+///////////////////////////////////////////////////////////////////////////////
 
 } // namespace QML

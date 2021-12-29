@@ -1,5 +1,6 @@
 #include "Backend.h"
 
+#include "Analytics.h"
 #include "AlgorithmHelpers.h"
 #include "BasicTypes.h"
 #include "Challenges/Altruism.h"
@@ -26,9 +27,11 @@ Backend::Backend()
       m_xParameterIO->GetParamRef()
   ))
   , m_xChallenge(std::make_unique<Challenges::Altruism>(*m_xRandomGenerator.get(), m_xParameterIO->GetParamRef()))
+  , m_xAnalytics(std::make_unique<Analytics>())
   , m_xGenerationGenerator(std::make_unique<GenerationGenerator>(
       *m_xGrid.get(), 
       *m_xPeeps.get(), 
+      *m_xAnalytics.get(),
       *m_xSignals.get(), 
       m_xParameterIO->GetParamRef(),
       *m_xRandomGenerator.get(),
@@ -37,7 +40,7 @@ Backend::Backend()
   , m_xSysStateMachine(std::make_unique<SysStateMachine>())
   , m_BarrierType(static_cast<eBarrierType>(m_xParameterIO->GetParamRef().barrierType))
 {
-    qRegisterMetaType<ImageFrameData>("ImageFrameData");
+    qRegisterMetaType<WorldData>("WorldData");
 
 }
 
@@ -100,6 +103,7 @@ void Backend::Reset()
             m_xSensors->AvailableSensorTypeCount(),
             m_xActions->AvailableActionTypeCount());
         m_Generation = 0;
+        m_xAnalytics->Clear();
     }
 }
 
@@ -140,13 +144,16 @@ void Backend::Run()
     m_xGrid->init(); // the land on which the peeps live
     m_xSignals->init(parameters.signalLayers, parameters.sizeX, parameters.sizeY);  // where the pheromones waft
     m_xPeeps->init(parameters.population, parameters); // the peeps themselves
+    SetChallengeId(static_cast<unsigned>(m_CurrentChallenge));
+    m_BarrierType = static_cast<eBarrierType>(parameters.barrierType);
 
+    // Define functions called in the system state machine
     auto reset = [this]() { Backend::Reset();} ;
     auto checkParameters = [this]() { return Backend::CheckParameters(); };
-    SetChallengeId(static_cast<unsigned>(m_CurrentChallenge));
 
     while (!m_ThreadStop)
     {
+        // Evaluate the state machine every cycle, looking for parameter/action changes
         m_xSysStateMachine->Evaluate(checkParameters, reset);
         if (m_xSysStateMachine->GenerationRunning())
         {
@@ -156,7 +163,6 @@ void Backend::Run()
             m_xActions->AvailableActionTypeCount()); // starting population
         }
 
-        m_BarrierType = static_cast<eBarrierType>(parameters.barrierType);
         while (!m_ThreadStop && m_xSysStateMachine->GenerationRunning()) { // generation loop
             unsigned murderCount = 0; // for reporting purposes
             for (unsigned simStep = 0; simStep < parameters.stepsPerGeneration && m_xSysStateMachine->SimStepRunning(); ++simStep) {
@@ -254,10 +260,10 @@ QColor ConvertUint8ToQColor(uint8_t c)
 }
 
 //---------------------------------------------------------------------------
-ImageFrameData Backend::GetImageFrameData()
+WorldData Backend::GetWorldData()
 {
     m_Lock.lockForWrite();
-    auto data = m_UIFrameData;
+    auto data = m_WorldData;
     m_Lock.unlock();
     return data;
 }
@@ -268,20 +274,20 @@ void Backend::saveVideoFrameSync(unsigned simStep, unsigned generation)
     // We cache a local copy of data from params, grid, and peeps because
     // those objects will change by the main thread at the same time our
     // saveFrameThread() is using it to output a video frame.
-    m_UIFrameData.simStep = simStep;
-    m_UIFrameData.generation = generation;
-    m_UIFrameData.signalLayers.clear();
-    m_UIFrameData.maxPopulation = m_xParameterIO->GetParamRef().population;
+    m_WorldData.simStep = simStep;
+    m_WorldData.generation = generation;
+    m_WorldData.signalLayers.clear();
+    m_WorldData.maxPopulation = m_xParameterIO->GetParamRef().population;
 
     {
         m_Lock.lockForWrite();
-        m_UIFrameData.peepsPositions.clear();
-        m_UIFrameData.peepsColors.clear();
+        m_WorldData.peepsPositions.clear();
+        m_WorldData.peepsColors.clear();
         for (uint16_t index = 1; index <= m_xParameterIO->GetParamRef().population; ++index) {
             const Peep &peep = (*m_xPeeps.get())[index];
             if (peep.alive) {
-                m_UIFrameData.peepsPositions.append(QPoint(peep.loc.x, peep.loc.y));
-                m_UIFrameData.peepsColors.append(ConvertUint8ToQColor(Genetics::makeGeneticColor(peep.genome)));
+                m_WorldData.peepsPositions.append(QPoint(peep.loc.x, peep.loc.y));
+                m_WorldData.peepsColors.append(ConvertUint8ToQColor(Genetics::makeGeneticColor(peep.genome)));
             }
         }
         m_Lock.unlock();
@@ -297,13 +303,15 @@ eChallenges Backend::GetChallengeId() const
 //---------------------------------------------------------------------------
 void Backend::SetChallengeId(unsigned id)
 {
-    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::InitSensorsActions);
+    // Inform the state machine about the parameter action.
+    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::InitChallenge);
     m_CurrentChallenge = static_cast<eChallenges>(id);
     m_xChallenge = 
         std::unique_ptr<Challenges::iChallenge>(Challenges::CreateChallenge(
             m_CurrentChallenge,
             *m_xRandomGenerator.get(),
             m_xParameterIO->GetParamRef()));
+    // Inform the state machine about the parameter action completion.
     m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::FinishAction);
 }
 
@@ -340,3 +348,27 @@ std::vector<std::string> Backend::GetActionNames() const
     }
     return names;
 }
+
+//---------------------------------------------------------------------------
+std::pair<unsigned, std::vector<unsigned> > Backend::GetSurvivors() const
+{
+    return m_xAnalytics->GetSurvivors();
+}
+
+//---------------------------------------------------------------------------
+std::pair<unsigned, std::vector<float> > Backend::GetGeneticDiversity() const
+{
+    return m_xAnalytics->GetGeneticDiversity();
+}
+
+//---------------------------------------------------------------------------
+std::vector<std::string> Backend::GetAnalyticsTypes() const
+{
+    return Analytics::GetAnalyticsNames();
+}
+
+//---------------------------------------------------------------------------
+std::pair<uint16_t, uint16_t> Backend::GetFrameSize() const
+{
+    return { m_xParameterIO->GetParamRef().sizeX, m_xParameterIO->GetParamRef().sizeY }; 
+};

@@ -66,9 +66,6 @@ void SysStateMachine::Evaluate(
 //-------------------------------------------------------------------------
 void SysStateMachine::ApplyState(std::function<void()> reset, std::function<bool()> checkParameters)
 {
-    if (m_CurrentSysState == m_NewSysState)
-        return;
-
     switch (m_NewSysState)
     {
     case eSysStates::Stopped:

@@ -1,6 +1,7 @@
 #include "App.h"
 
 #include "QMLInterface.h"
+#include "qml/ChartsConnector.h"
 
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -13,6 +14,7 @@ App::App(int argc, char *argv[])
     : QApplication(argc, argv)
 {
     qmlRegisterType<QML::QMLInterface>("backendGuiInterface", 1, 0, "QMLInterface");
+    qmlRegisterType<QML::ChartsConnector>("backendGuiInterface", 1, 0, "ChartsConnector");
     m_MainView.engine()->rootContext()->setContextProperty("_window", &m_MainView);
     m_MainView.setResizeMode(QQuickView::SizeRootObjectToView);
     m_MainView.setSource(QUrl("qrc:/qml/main.qml"));

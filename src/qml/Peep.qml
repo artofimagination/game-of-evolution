@@ -1,5 +1,6 @@
 import QtQuick 2.0
 
+//! Component responsible for storing and drawing peep data.
 Component{
     id: peepComponent
     Item{

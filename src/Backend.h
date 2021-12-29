@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Analytics.h"
 #include "GenerationGenerator.h"
 #include "Grid.h"
 #include "Parameters.h"
@@ -21,7 +22,7 @@ class Actions;
 // This holds all data needed to construct one image frame. The data is
 // cached in this structure so that the image writer can work on it in
 // a separate thread while the main thread starts a new simstep.
-struct ImageFrameData {
+struct WorldData {
     Q_GADGET
 public:
     unsigned maxPopulation;
@@ -47,8 +48,8 @@ public:
 
     Backend();
 
-    Q_INVOKABLE QSize GetFrameSize() { return QSize(m_xParameterIO->GetParamRef().sizeX, m_xParameterIO->GetParamRef().sizeY); };
-
+    //! Returns the world size.
+    std::pair<uint16_t, uint16_t> GetFrameSize() const;
     //! Stops the work.
     Q_INVOKABLE void StopThread() { m_ThreadStop = true; }
     //! Returns the current challenge id.
@@ -75,17 +76,25 @@ public:
     void ResetSim();
     //! Returns all challenge names.
     std::vector<std::string> GetChallengeNames() const;
+    //! Returns the vector of survivors not sent out yet alongside the last processed index.
+    std::pair<unsigned, std::vector<unsigned> > GetSurvivors() const;
+    //! Returns the vector of genetic diversities not sent out yet alongside the last processed index.
+    std::pair<unsigned, std::vector<float> > GetGeneticDiversity() const;
+    //! Returns the available analytics types.
+    std::vector<std::string> GetAnalyticsTypes() const;
 
 signals:
+    //! Signals when the parameters are read and processed.
     void ParametersUpdated();
 
 public slots:
+    //! Main work load of the class
     void Run();
 
-    Q_INVOKABLE ImageFrameData GetImageFrameData();
+    //! Returns the world data.
+    WorldData GetWorldData();
 
 private:
-
     /**********************************************************************************************
     Execute one simStep for one individual.
 
@@ -111,7 +120,8 @@ private:
         randomUint - global random number generator, a private instance is given to each thread
     **********************************************************************************************/
     void SimStepOnePeep(Peep &indiv, unsigned simStep, RandomUintGenerator& random);
-
+    //! Checks parameters that are neccessary to run the simulation. If any of the conditions are not met
+    //! The simulation goes to a halt.
     bool CheckParameters();
     //! Reset all simulation data
     void Reset();
@@ -140,23 +150,26 @@ private:
 
     QReadWriteLock                                    m_Lock;
     bool                                              m_ThreadStop{false};  ///!< When set to true stop the work.
-    ImageFrameData                                    m_UIFrameData{};
+    WorldData                                         m_WorldData{};        ///< Contains the world data for the current sim step.
+                                                                            ///< Processed by an external thread (for example UI)
 
-    std::unique_ptr<RandomUintGenerator>              m_xRandomGenerator{};
-    std::unique_ptr<ParameterIO>                      m_xParameterIO{};
-    std::unique_ptr<Grid>                             m_xGrid{};
-    std::unique_ptr<PheromoneSignals>                 m_xSignals{};
-    std::unique_ptr<Sensors>                          m_xSensors{};
-    std::unique_ptr<PeepsPool>                        m_xPeeps{};
-    std::unique_ptr<Actions>                          m_xActions{};
-    std::unique_ptr<Challenges::iChallenge>           m_xChallenge{};
-    std::unique_ptr<GenerationGenerator>              m_xGenerationGenerator{};
-    std::unique_ptr<SysStateMachine>                  m_xSysStateMachine{};
-    eChallenges                                       m_CurrentChallenge{eChallenges::Altruism};
+    std::unique_ptr<RandomUintGenerator>              m_xRandomGenerator{}; ///< Random number generator
+    std::unique_ptr<ParameterIO>                      m_xParameterIO{};     ///< Parameter IO handler
+    std::unique_ptr<Grid>                             m_xGrid{};            ///< World grid manager
+    std::unique_ptr<PheromoneSignals>                 m_xSignals{};         ///< Pheromon signal manager
+    std::unique_ptr<Sensors>                          m_xSensors{};         ///< Sensors manager
+    std::unique_ptr<PeepsPool>                        m_xPeeps{};           ///< Peeps life cycle manager
+    std::unique_ptr<Actions>                          m_xActions{};         ///< Peep actions manager
+    std::unique_ptr<Challenges::iChallenge>           m_xChallenge{};       ///< Holds the current challenge
+    std::unique_ptr<Analytics>                        m_xAnalytics{};       ///< Analytics manager
+    std::unique_ptr<GenerationGenerator>              m_xGenerationGenerator{};                     ///< Handles generation evaluation and regeneration
+    std::unique_ptr<SysStateMachine>                  m_xSysStateMachine{};                         ///< System state machine
+    Analytics::eType                                  m_AnalyticsType{Analytics::eType::Survivors}; ///< Holds the current active analytics type
+    eChallenges                                       m_CurrentChallenge{eChallenges::Altruism};    ///< Holds the current active challenge type
 
-    eBarrierType                                      m_BarrierType{eBarrierType::NoBarrier};
-    std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};
-    unsigned                                          m_Generation{0};
-    unsigned                                          m_SimStep{0};
+    eBarrierType                                      m_BarrierType{eBarrierType::NoBarrier};       ///< Holds the current active barrier type
+    std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};                                 ///< Holds the current barriers
+    unsigned                                          m_Generation{0};                              ///< Stores the generation count
+    unsigned                                          m_SimStep{0};                                 ///< Stores the simulation step count.
     
 };

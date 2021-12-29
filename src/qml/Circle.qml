@@ -1,5 +1,7 @@
 import QtQuick 2.0
 
+
+//! Component responsible for storing and drawing circle data.
 Component{
     id: circleComponent
     Item{

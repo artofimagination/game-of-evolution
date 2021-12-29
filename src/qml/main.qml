@@ -1,8 +1,9 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.2
+import QtQuick.Controls 1.4 as Controls1
+import QtQuick.Controls.Styles 1.4
+import QtQuick.Layouts 1.12
 import QtQuick.Window 2.3
-import QtQml.Models 2.2
 
 import backendGuiInterface 1.0
 
@@ -15,75 +16,144 @@ Rectangle {
 
     property var backendEngine
 
+    //! Update canvas from backend data. The update is triggered by the backend at the moment.
     function updateCanvasSize(){
         var scaledPeepRadius = simulatorCanvas.peepRadius * backendInterface.UiScale()
-        canvasRectangle.width = backendEngine.GetFrameSize().width * backendInterface.UiScale() + scaledPeepRadius
-        canvasRectangle.height = backendEngine.GetFrameSize().height * backendInterface.UiScale() + scaledPeepRadius
+        var frameSize = backendInterface.GetFrameSize()
+        canvasRectangle.width = frameSize.width * backendInterface.UiScale() + scaledPeepRadius
+        canvasRectangle.height = frameSize.height * backendInterface.UiScale() + scaledPeepRadius
         simulatorCanvas.scaling = backendInterface.UiScale()
     }
 
+    //! Sets challenge elements. Triggered by challenge selection and by the canvas refresh timer.
+    //! The latter is needed, because the challenge details can change from one sim step to the other.
     function setChallengeItems(challengeId)
     {
-        if (challengeId == Challenge.Altruism) {
-            var setup = backendInterface.GetAltruismSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.altruismCenter, setup.altruismColor, setup.altruismRadius)
-            simulatorCanvas.createCircleChallengeItem(setup.sacrificeCenter, setup.sacrificeColor, setup.sacrificeRadius)
-        } else if (challengeId == Challenge.AltruismSacrifice) {
-            var setup = backendInterface.GetAltruismSacrificeSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.altruismSacrificeCenter, setup.altruismSacrificeColor, setup.altruismSacrificeRadius)
-        } else if (challengeId == Challenge.Circle) {
-            var setup = backendInterface.GetCircleSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
-        } else if (challengeId == Challenge.RightHalf) {
-            var setup = backendInterface.GetRightHalfSetup()
-            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
-        } else if (challengeId == Challenge.RightQuarter) {
-            var setup = backendInterface.GetRightQuarterSetup()
-            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
-        } else if (challengeId == Challenge.LeftEighth) {
-            var setup = backendInterface.GetLeftEighthSetup()
-            simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
-        } else if (challengeId == Challenge.NeighborCount) {
-            var setup = backendInterface.GetNeighborCountSetup()
-            simulatorCanvas.createBorders(setup.neighborCountBorders, 10, setup.neighborCountColor)
-        } else if (challengeId == Challenge.CenterWeighted) {
-            var setup = backendInterface.GetCenterWeightedSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
-        } else if (challengeId == Challenge.CenterUnweighted) {
-            var setup = backendInterface.GetCenterUnweightedSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
-        } else if (challengeId == Challenge.CenterSparsed) {
-            var setup = backendInterface.GetCenterSparsedSetup()
-            simulatorCanvas.createCircleChallengeItem(setup.centerSparsedCenter, setup.centerSparsedColor, setup.centerSparsedRadius)
-        } else if (challengeId == Challenge.Corner) {
-            var setup = backendInterface.GetCornerSetup()
-            for(var i = 0; i < setup.cornerCenters.length; i++){
-                simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
-            }
-        } else if (challengeId == Challenge.CornerWeighted) {
-            var setup = backendInterface.GetCornerSetup()
-            for(var i = 0; i < setup.cornerCenters.length; i++){
-                simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
-            }
-        } else if (challengeId == Challenge.RadioActiveWalls) {
-            var setup = backendInterface.GetRadioactiveWallSetup()
-            simulatorCanvas.setCanvasGradient(setup.border, setup.radioactiveColor, setup.distance)
-        } else if (challengeId == Challenge.TouchAnyWall) {
-            var setup = backendInterface.GetTouchAnyWallSetup()
-            simulatorCanvas.createBorders(setup.anyWallBorders, 10, setup.anyWallColor)
-        } else if (challengeId == Challenge.AgainstAnyWall) {
-            var setup = backendInterface.GetAgainstAnyWallSetup()
-            simulatorCanvas.createBorders(setup.anyWallBorders, 10, setup.anyWallColor)
-        } else if (challengeId == Challenge.EastWestEighths) {
-            var setup = backendInterface.GetEastWestEighthsSetup()
-            simulatorCanvas.createRectChallengeItem(setup.rectLeft, setup.doubleRectColor)
-            simulatorCanvas.createRectChallengeItem(setup.rectRight, setup.doubleRectColor)
-        } else if (challengeId == Challenge.Pairs) {
-            var setup = backendInterface.GetPairsSetup()
-            simulatorCanvas.createBorders(setup.pairsBorders, 10, setup.pairsColor)
+        switch(challengeId)
+        {
+            case Challenge.Altruism:
+                var setup = backendInterface.GetAltruismSetup()
+                simulatorCanvas.createCircleChallengeItem(setup.altruismCenter, setup.altruismColor, setup.altruismRadius)
+                simulatorCanvas.createCircleChallengeItem(setup.sacrificeCenter, setup.sacrificeColor, setup.sacrificeRadius)
+                break
+            case Challenge.AltruismSacrifice:
+                var setup = backendInterface.GetAltruismSacrificeSetup()
+                simulatorCanvas.createCircleChallengeItem(
+                    setup.altruismSacrificeCenter,
+                    setup.altruismSacrificeColor,
+                    setup.altruismSacrificeRadius)
+                break
+            case Challenge.Circle:
+                var setup = backendInterface.GetCircleSetup()
+                simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+                break
+            case Challenge.RightHalf:
+                var setup = backendInterface.GetRightHalfSetup()
+                simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+                break
+            case Challenge.RightQuarter:
+                var setup = backendInterface.GetRightQuarterSetup()
+                simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+                break
+            case Challenge.LeftEighth:
+                var setup = backendInterface.GetLeftEighthSetup()
+                simulatorCanvas.createRectChallengeItem(setup.rect, setup.rectColor)
+                break
+            case Challenge.NeighborCount:
+                var setup = backendInterface.GetNeighborCountSetup()
+                simulatorCanvas.createBorderChallengeItems(setup.neighborCountBorders, 10, setup.neighborCountColor)
+                break
+            case Challenge.CenterWeighted:
+                var setup = backendInterface.GetCenterWeightedSetup()
+                simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+                break
+            case Challenge.CenterUnweighted:
+                var setup = backendInterface.GetCenterUnweightedSetup()
+                simulatorCanvas.createCircleChallengeItem(setup.center, setup.color, setup.radius)
+                break
+            case Challenge.CenterSparsed:
+                var setup = backendInterface.GetCenterSparsedSetup()
+                simulatorCanvas.createCircleChallengeItem(
+                    setup.centerSparsedCenter, 
+                    setup.centerSparsedColor, 
+                    setup.centerSparsedRadius)
+                break
+            case Challenge.Corner:
+                var setup = backendInterface.GetCornerSetup()
+                for(var i = 0; i < setup.cornerCenters.length; i++){
+                    simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
+                }
+                break
+            case Challenge.CornerWeighted:
+                var setup = backendInterface.GetCornerSetup()
+                for(var i = 0; i < setup.cornerCenters.length; i++){
+                    simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
+                }
+                break
+            case Challenge.RadioActiveWalls:
+                var setup = backendInterface.GetRadioactiveWallSetup()
+                simulatorCanvas.setCanvasGradient(setup.border, setup.radioactiveColor, setup.distance)
+                break
+            case Challenge.TouchAnyWall:
+                var setup = backendInterface.GetTouchAnyWallSetup()
+                simulatorCanvas.createBorderChallengeItems(setup.anyWallBorders, 10, setup.anyWallColor)
+                break
+            case Challenge.AgainstAnyWall:
+                var setup = backendInterface.GetAgainstAnyWallSetup()
+                simulatorCanvas.createBorderChallengeItems(setup.anyWallBorders, 10, setup.anyWallColor)
+                break
+            case Challenge.EastWestEighths:
+                var setup = backendInterface.GetEastWestEighthsSetup()
+                simulatorCanvas.createRectChallengeItem(setup.rectLeft, setup.doubleRectColor)
+                simulatorCanvas.createRectChallengeItem(setup.rectRight, setup.doubleRectColor)
+                break
+            case Challenge.Pairs:
+                var setup = backendInterface.GetPairsSetup()
+                simulatorCanvas.createBorderChallengeItems(setup.pairsBorders, 10, setup.pairsColor)
+                break
+            default:
+                break
         }
     }
 
+    //! Sets the new challenge in the backend and restarts the analytics charts.
+    function setChallenge(challengeId) {
+        setChallengeItems(challengeId)
+        analyticsTab.removeAllSeries()
+    }
+
+    //! Sets the new analytics chart series.
+    function setAnalyticsType(analyticsType)
+    {
+        analyticsTab.removeAllSeries()
+        switch (analyticsType ) {
+            case AnalyticsTypes.Survivors:
+                analyticsTab.addInput("red", "Survivors", 0)
+                break
+            case AnalyticsTypes.GeneticDiversity:
+                analyticsTab.addInput("red", "GeneticDiversity", 0)
+                break
+            default:
+                break
+        }
+    }
+
+    //! Gets new analytics data from the backend. Will trigger a signal with the new data towards the chart.
+    function updateAnalyticsData(analyticsType) {
+        switch (analyticsType ) {
+            case AnalyticsTypes.Survivors:
+                var data = backendInterface.GetSurvivors()
+                break
+            case AnalyticsTypes.GeneticDiversity:
+                var data = backendInterface.GetGeneticDiversity()
+                break
+            default:
+                break
+        }
+        analyticsTab.updateChartData(data)
+    }
+
+    //! Creates barrier UI elements.
     function setBarriers(barrierType)
     {
         if (barrierType == Barrier.ThreeFloatingIslands ||
@@ -103,49 +173,40 @@ Rectangle {
         }
     }
 
+    //! Sets the initial details and analytics data
     function setUI()
     {
-        var names = backendInterface.GetSensorNames()
-        for(var i = 0; i < names.length; i++){
-            sensorModel.model.append({name:names[i], selected: false})
-        }
-        sensorsScroll.contentHeight = sensorModel.model.count * sensorModel.itemHeight
-
-        var names = backendInterface.GetActionNames()
-        for(var i = 0; i < names.length; i++){
-            actionModel.model.append({name:names[i], selected: false})
-        }
-        actionsScroll.contentHeight = actionModel.model.count * actionModel.itemHeight
-
-        var names = backendInterface.GetChallengeNames()
-        for(var i = 0; i < names.length; i++){
-            challengeComboBox.model.append({name:names[i]})
-        }
+        detailsTab.setData()
+        analyticsTab.setData()
     }
 
+    //! Updates dynamic UI elements when the canvas update is triggered.
     function updateUiData() {
         simulatorCanvas.clear();
         var challenge = backendInterface.GetChallengeId()
         var barrierType = backendInterface.GetBarrierType()
-        var imageData = backendInterface.GetImageFrameData()
+        var imageData = backendInterface.GetWorldData()
         simulatorCanvas.createPeeps(imageData.peepsPositions, imageData.peepsColors)
         setChallengeItems(challenge)
-        challengeComboBox.currentIndex = challenge
         setBarriers(barrierType)
 
-        generation.text = "Generation " + imageData.generation
-        simulationStep.text = "Sim step " + imageData.simStep
-        maxPopulation.text = "Max population " + imageData.maxPopulation
-        
+        detailsTab.challengeIndex = challenge
+        detailsTab.generationText = "Generation " + imageData.generation
+        detailsTab.simStepText = "Sim step " + imageData.simStep
+        detailsTab.maxPopulationText = "Max population " + imageData.maxPopulation
     }
 
+    //! C++ QML/backend interface 
     QMLInterface{
         id: backendInterface
 
         Component.onCompleted: {
             mainPage.backendEngine = StartBackend()
             mainPage.backendEngine.ParametersUpdated.connect(mainPage.updateCanvasSize)
-            simulatorCanvas.getUiData.connect(mainPage.updateUiData)
+            detailsTab.selectChallenge.connect(mainPage.setChallenge)
+            analyticsTab.selectAnalytics.connect(mainPage.setAnalyticsType)
+            analyticsTab.requestUpdateData.connect(mainPage.updateAnalyticsData)
+            simulatorCanvas.requestUiData.connect(mainPage.updateUiData)
         }
     }
 
@@ -157,12 +218,14 @@ Rectangle {
         font.pointSize: 24; font.bold: true
     }
 
+    //! Main content window area
     Rectangle {
         id: simulatorWindow
         y: titleText.y + titleText.font.pointSize + cTitleAreaWidth
         width: mainPage.width; height: mainPage.height - y
         color: "lightgray"
 
+        //! World canvas
         Frame {
             id: canvasRectangle
             anchors.left: parent.left
@@ -172,6 +235,7 @@ Rectangle {
             }
         }
 
+        //! Simulation start/stop/reset
         Frame {
             anchors.top: canvasRectangle.bottom
             Row {
@@ -215,248 +279,54 @@ Rectangle {
             }
         }
 
-        Frame {
-            id: detailsRectangle
+        //! Details/Config/Analytics/NeuralNetwork tabs
+        TabBar {
+            id: detailsTabBar
             anchors.left: canvasRectangle.right
             anchors.top: simulatorWindow.top
-            anchors.leftMargin: 50
-            anchors.topMargin: 20
-            Column {
-                spacing: 5
-                Text {
-                    id: details
-                    text: "Details:"
-                    font.bold: true
-                    font.pointSize: 16
-                }
-                Text {
-                    id: generation
-                    text: "Generation"
-                    font.pointSize: 12
-                }
-                Text {
-                    id: simulationStep
-                    text: "Sim step "
-                    font.pointSize: 12
-                }
-                Text {
-                    id: maxPopulation
-                    text: "Max population "
-                    font.pointSize: 12
-                }
+            anchors.leftMargin: 20
+            anchors.topMargin: 10
+            width: mainPage.width - canvasRectangle.width
+
+            TabButton {
+                text: "Details"
+            }
+            TabButton {
+                text: "Analytics"
+            }
+
+            TabButton {
+                text: "Neural network"
             }
         }
 
-        Frame {
-            id: settingsFrame
-            anchors.left: detailsRectangle.right
-            anchors.top: simulatorWindow.top
-            anchors.leftMargin: 50
-            anchors.topMargin: 20
-            Column {
-                spacing: 5
+        StackLayout {
+            anchors.left: detailsTabBar.left
+            anchors.top: detailsTabBar.bottom
+            anchors.leftMargin: 20
+            anchors.topMargin: 10
+            id: detailsLayout
+
+            currentIndex: detailsTabBar.currentIndex
+
+            Details {
+                id: detailsTab
+            }
+
+            Analytics {
+                id: analyticsTab
+            }
+
+            Item {
                 Text {
-                    id: settings
-                    text: "Settings:"
-                    font.bold: true
-                    font.pointSize: 16
-                }
-
-                Text {
-                    id: sensors
-                    text: "Sensors"
-                    font.italic: true
-                    font.pointSize: 14
-                }
-                
-                Rectangle {
-                    width: 400; height: 200
-                    
-                    ScrollView {
-                        id: sensorsScroll
-                        anchors.fill: parent
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-                        ScrollBar.vertical.interactive: true
-                        clip: true
-                        
-                        DelegateModel {
-                            property var itemHeight: 20
-                            property var itemsSelectedArray: []
-                            id: sensorModel
-                            model: ListModel {}
-
-                            groups: [
-                                DelegateModelGroup { name: "selected" }
-                            ]
-
-                            delegate: Rectangle {
-                                id: item
-                                height: sensorModel.itemHeight
-                                width: parent.width
-                                radius: 5
-                                border.color: {
-                                    if (selected)
-                                        return "black"
-                                    return "white"
-                                }
-                                color: {
-                                  if (selected)
-                                      return "lightsteelblue"
-                                  return "white"
-                                }
-                                Text {
-                                    font.pointSize: 12
-                                    font.bold: true
-                                    text: {
-                                        return name;
-                                    }
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        selectAllCheckBox.checked = false
-                                        sensorModel.model.get(index).selected = !sensorModel.model.get(index).selected
-                                    }
-                                }
-                            }
-                        }
-
-                        ListView {
-                            anchors.fill: parent
-                            model: sensorModel
-                        }
-                    }
-                }
-                Text {
-                    id: actions
-                    text: "Actions"
-                    font.italic: true
-                    font.pointSize: 14
-                }
-                
-                Rectangle {
-                    width: 400; height: 200
-                    
-                    ScrollView {
-                        id: actionsScroll
-                        anchors.fill: parent
-                        ScrollBar.vertical.policy: ScrollBar.AlwaysOn
-                        ScrollBar.vertical.interactive: true
-                        clip: true
-                        
-                        DelegateModel {
-                            property var itemHeight: 20
-                            id: actionModel
-                            model: ListModel { id: actionModelList }
-
-                            groups: [
-                                DelegateModelGroup { name: "selected" }
-                            ]
-
-                            delegate: Rectangle {
-                                id: item
-                                height: actionModel.itemHeight
-                                width: parent.width
-                                radius: 5
-                                border.color: {
-                                    if (selected)
-                                        return "black"
-                                    return "white"
-                                }
-                                color: {
-                                  if (selected)
-                                      return "lightsteelblue"
-                                  return "white"
-                                }
-                                Text {
-                                    font.pointSize: 12
-                                    font.bold: true
-                                    text: {
-                                        return name;
-                                    }
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onClicked: {
-                                        selectAllCheckBox.checked = false
-                                        actionModel.model.get(index).selected = !actionModel.model.get(index).selected
-                                    }
-                                }
-                            }
-                        }
-
-                        ListView {
-                            anchors.fill: parent
-                            model: actionModel
-                        }
-                    }
-                }
-                Row {
-                    spacing: 80
-                    padding: 10.0
-                    Button {
-                        id: updateButton
-                        text: "Update"
-                        background: Rectangle {
-                            color: "darkgrey"
-                        }
-
-                        onClicked: {
-                            var sensorSelectedArray = []
-                            for(var i = 0; i < sensorModel.count; i++){
-                                sensorSelectedArray.push(sensorModel.model.get(i).selected)
-                            }
-                            var actionSelectedArray = []
-                            for(var i = 0; i < actionModel.count; i++){
-                                actionSelectedArray.push(actionModel.model.get(i).selected)
-                            }
-                            backendInterface.UpdateSensorsActions(sensorSelectedArray, actionSelectedArray)
-                        }
-                    }
-                    Row {
-                      spacing: 10
-
-                      Text {
-                          text: "Select All"
-                          font.pointSize: 12
-                      }
-
-                      CheckBox {
-                          id: selectAllCheckBox
-                          onClicked: {
-                              for(var i = 0; i < sensorModel.count; i++){
-                                  sensorModel.model.get(i).selected = selectAllCheckBox.checked
-                              }
-
-                              for(var i = 0; i < actionModel.count; i++){
-                                  actionModel.model.get(i).selected = selectAllCheckBox.checked
-                              }
-                          }
-                      }
-                    }
+                  text: "TBD"
                 }
             }
-        }
-        Frame {
-            id: challenges
-            anchors.left: settingsFrame.right
-            anchors.top: simulatorWindow.top
-            anchors.leftMargin: 50
-            anchors.topMargin: 20
-            Column {
-                Text {
-                    text: "Challenges:"
-                    font.pointSize: 16
-                    font.bold: true
-                }
 
-                ComboBox {
-                  id: challengeComboBox
-                  model: ListModel {}
-                  onActivated: {
-                      backendInterface.SetChallengeId(challengeComboBox.currentIndex)
-                      setChallengeItems(challengeComboBox.currentIndex)
-                  }
+            onCurrentIndexChanged: {
+                if (currentIndex == 1) {
+                    analyticsTab.width = mainPage.width - canvasRectangle.width - 50
+                    analyticsTab.height = canvasRectangle.height
                 }
             }
         }
