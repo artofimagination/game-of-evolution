@@ -8,7 +8,7 @@
 # Game of Evolution
 This is a for from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)
 
-This repo has a major overhaul of the code into a new structure. The core logic has not been changed and will be kept in original-biosim4-core branch, for the keen users, who wants to have the same behavior as the original biosim4 repo, but with a UI interface.
+This repo has a major overhaul of the code into a new structure. The core logic has not been changed and will be kept in original-biosim4-core branch, for the keen users, who wants to have the same behavior as the original biosim4 repo, but with a UI interface.<br>
 TODO:
   - Video generation feature is not yet migrated and is not working at the moment
   - There is no logging migrated yet, so it is not functional either
@@ -68,6 +68,7 @@ There is only a single main page at the moment. If you are interested in the bac
 * **Settings** - allows to configure the simulation
      - _Sensors_ - the user can select one or more sensors. Only the selected ones will be used during the genome generation
      - _Actions_ - the user can select one or more actions. Only the selected ones will be used during the genome generation
+     - _Select All_ - allows the user to select every sensor and action at once
      - _Update_ - Sensor action changes will apply ony if Update is pressed. This also will reset and restart the simulation
 * **Challenges** - challenges selector. When a new challenge is selected the simulation and analytics will restart.
 
