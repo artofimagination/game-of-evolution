@@ -82,6 +82,8 @@ public:
     std::pair<unsigned, std::vector<float> > GetGeneticDiversity() const;
     //! Returns the available analytics types.
     std::vector<std::string> GetAnalyticsTypes() const;
+    //! Clears all processed counts in analytics.
+    void ClearAnalyticsProcessedCount();
 
 signals:
     //! Signals when the parameters are read and processed.

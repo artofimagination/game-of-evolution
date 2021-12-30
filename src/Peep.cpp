@@ -37,7 +37,7 @@ void Peep::initialize(
     lastMoveDir = Dir::random8(random);
     responsiveness = 0.5; // range 0.0..1.0
     longProbeDist = m_Params.longProbeDistance;
-    challengeBits = (unsigned)false; // will be set true when some task gets accomplished
+    challengeBits = 0; // will be set true when some task gets accomplished
     genome = std::move(genome_);
     createWiringFromGenome(sensorTypeCount, actionTypeCount);
 }

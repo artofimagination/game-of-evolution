@@ -34,10 +34,12 @@ public:
     static std::vector<std::string> GetAnalyticsNames();
     //! Resets all statistics. Should only happen on "Reset" system request or on Challenge change.
     void Clear();
+    //! Clears only the processed counts. Useful when analyticstype is changed.
+    void ClearProcessedCounts();
 private:
     std::vector<unsigned> m_Survivors{};      ///< Contains the survivor count of each generation.
     unsigned m_ProcessedSurvivors{};          ///< Contains the index of the last polled survivor count.
     std::vector<float> m_GeneticDiversity{};  ///< Contains the genetic diversity count of each generation.
-    unsigned m_ProcessedGenDiversity{};       ///< ///< Contains the index of the last polled genetic diversity count.
+    unsigned m_ProcessedGenDiversity{};       ///< Contains the index of the last polled genetic diversity count.
 };
 

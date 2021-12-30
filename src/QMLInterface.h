@@ -83,6 +83,7 @@ public:
     Q_INVOKABLE QVariantList GetSurvivors() const;
     Q_INVOKABLE QVariantList GetGeneticDiversity() const;
     Q_INVOKABLE QVariantList GetAnalyticsNames() const;
+    Q_INVOKABLE void ClearAnalyticsProcessedCount();
     ///////////////////////////////////////////////////////////////////////////////
 private:
 

@@ -481,6 +481,12 @@ QVariantList QMLInterface::GetAnalyticsNames() const
 }
 
 //-------------------------------------------------------------------------
+void QMLInterface::ClearAnalyticsProcessedCount()
+{
+    m_pBackendWorker->ClearAnalyticsProcessedCount();
+}
+
+//-------------------------------------------------------------------------
 QSize QMLInterface::GetFrameSize() const
 {
     auto size = m_pBackendWorker->GetFrameSize();

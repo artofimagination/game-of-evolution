@@ -26,10 +26,11 @@ public:
     //! Parameter related actions to control the system state.
     enum class eParameterActions : uint8_t
     {
-        Idle,               ///!< No active action.
-        InitSensorsActions, ///!< Sensors/actions changed.
-        InitChallenge,      ///!< Challanege has been changed.
-        FinishAction        ///!< Parameter action has been completed.
+        Idle,                 ///!< No active action.
+        InitSensorsActions,   ///!< Sensors/actions changed.
+        InitChallenge,        ///!< Challanege has been changed.
+        ClearAnalyticsCounts, ///!< Clears analytics counters.
+        FinishAction          ///!< Parameter action has been completed.
     };
 
     //! Update parameter action.
@@ -70,6 +71,8 @@ private:
     eParameterActions m_ParameterAction{eParameterActions::Idle};   ///!< Stores the current parameter action.
 
     // Internal state flow
+    eParameterActions m_ParameterActionInProcess{eParameterActions::Idle};  ///!< Stores a non-idle param action state 
+                                                                            ///!< as long as the action is not finished.
     eSysStates        m_CurrentSysState{eSysStates::Stopped};       ///!< Stores the current system state.
     eSysStates        m_NewSysState{eSysStates::Stopped};           ///!< Stores the new requested state.
     std::string       m_Error{};

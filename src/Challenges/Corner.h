@@ -27,7 +27,6 @@ public:
 
 private:
     Setup m_Setup{};
-    const Parameters& m_Params;
 };
 
 } // namespace Challenges
