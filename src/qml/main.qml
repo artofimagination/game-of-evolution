@@ -125,6 +125,7 @@ Rectangle {
     //! Sets the new analytics chart series.
     function setAnalyticsType(analyticsType)
     {
+        backendInterface.ClearAnalyticsProcessedCount();
         analyticsTab.removeAllSeries()
         switch (analyticsType ) {
             case AnalyticsTypes.Survivors:

@@ -189,9 +189,9 @@ void Backend::Run()
                     m_xChallenge.get(),
                     m_xSensors->AvailableSensorTypeCount(),
                     m_xActions->AvailableActionTypeCount());
-            if (numberSurvivors > 0 && (m_Generation % parameters.genomeAnalysisStride == 0)) {
-                Genetics::displaySampleGenomes(parameters.displaySampleGenomes, *m_xPeeps.get(), parameters);
-            }
+            // if (numberSurvivors > 0 && (m_Generation % parameters.genomeAnalysisStride == 0)) {
+            //     Genetics::displaySampleGenomes(parameters.displaySampleGenomes, *m_xPeeps.get(), parameters);
+            // }
             if (numberSurvivors == 0) {
                 m_Generation = 0;  // start over
             } else {
@@ -371,4 +371,12 @@ std::vector<std::string> Backend::GetAnalyticsTypes() const
 std::pair<uint16_t, uint16_t> Backend::GetFrameSize() const
 {
     return { m_xParameterIO->GetParamRef().sizeX, m_xParameterIO->GetParamRef().sizeY }; 
+};
+
+//---------------------------------------------------------------------------
+void Backend::ClearAnalyticsProcessedCount()
+{
+    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::ClearAnalyticsCounts);
+    m_xAnalytics->ClearProcessedCounts();
+    m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::FinishAction);
 };

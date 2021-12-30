@@ -195,18 +195,18 @@ void displaySensorActionReferenceCounts(const PeepsPool& peeps, const Parameters
         }
     }
 
-    std::cout << "Sensors in use:" << std::endl;
-    for (unsigned i = 0; i < sensorCounts.size(); ++i) {
-        if (sensorCounts[i] > 0) {
-            std::cout << "  " << sensorCounts[i] << " - " << sensorName((Sensors::eType)i) << std::endl;
-        }
-    }
-    std::cout << "Actions in use:" << std::endl;
-    for (unsigned i = 0; i < actionCounts.size(); ++i) {
-        if (actionCounts[i] > 0) {
-            std::cout << "  " << actionCounts[i] << " - " << actionName((Actions::eType)i) << std::endl;
-        }
-    }
+    // std::cout << "Sensors in use:" << std::endl;
+    // for (unsigned i = 0; i < sensorCounts.size(); ++i) {
+    //     if (sensorCounts[i] > 0) {
+    //         std::cout << "  " << sensorCounts[i] << " - " << sensorName((Sensors::eType)i) << std::endl;
+    //     }
+    // }
+    // std::cout << "Actions in use:" << std::endl;
+    // for (unsigned i = 0; i < actionCounts.size(); ++i) {
+    //     if (actionCounts[i] > 0) {
+    //         std::cout << "  " << actionCounts[i] << " - " << actionName((Actions::eType)i) << std::endl;
+    //     }
+    // }
 }
 
 } // namespace SensorsActions

@@ -13,7 +13,6 @@ namespace Challenges
 
 //-------------------------------------------------------------------------
 Corner::Corner(const Parameters& params)
-    : m_Params(params)
 {
     m_Setup.centers.emplace_back(Coord{ 0, 0 });
     m_Setup.centers.emplace_back(Coord{ 0, (int16_t)(params.sizeY - 1) });

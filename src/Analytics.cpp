@@ -12,6 +12,13 @@ void Analytics::Clear()
 }
 
 //-------------------------------------------------------------------------
+void Analytics::ClearProcessedCounts()
+{
+    m_ProcessedSurvivors = 0;
+    m_ProcessedGenDiversity = 0;
+}
+
+//-------------------------------------------------------------------------
 std::pair<unsigned, std::vector<unsigned> > Analytics::GetSurvivors()
 {
     assert(m_ProcessedSurvivors <= m_Survivors.size());
