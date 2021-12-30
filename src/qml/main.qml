@@ -111,6 +111,12 @@ Rectangle {
                 var setup = backendInterface.GetPairsSetup()
                 simulatorCanvas.createBorderChallengeItems(setup.pairsBorders, 10, setup.pairsColor)
                 break
+            case Challenge.CircularSequence:
+                var setup = backendInterface.GetCircularSequenceSetup()
+                for(var i = 0; i < setup.cornerCenters.length; i++){
+                    simulatorCanvas.createCircleChallengeItem(setup.cornerCenters[i], setup.cornerColor, setup.cornerRadius)
+                }
+                break
             default:
                 break
         }

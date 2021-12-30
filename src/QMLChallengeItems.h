@@ -42,6 +42,7 @@ public:
         LocationSequence,
         Altruism,
         AltruismSacrifice,
+        CircularSequence,
         NoOfChallenges,
     };
     Q_ENUM(Value)
@@ -181,7 +182,7 @@ public:
     Q_PROPERTY(QColor centerSparsedColor MEMBER color)
 };
 
-struct CornerSetup
+struct MultiCircleSetup
 {
     Q_GADGET
 public:

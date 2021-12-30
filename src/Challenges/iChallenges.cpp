@@ -7,6 +7,7 @@
 #include "Challenges/CenterUnweighted.h"
 #include "Challenges/CenterWeighted.h"
 #include "Challenges/Circle.h"
+#include "Challenges/CircularSequence.h"
 #include "Challenges/Corner.h"
 #include "Challenges/CornerWeighted.h"
 #include "Challenges/EastWestEighths.h"
@@ -137,6 +138,9 @@ iChallenge* CreateChallenge(
         // safeCenter and radius
         case eChallenges::Altruism:
             return new Altruism(random, params);
+        // Increasing survival chances with getting in more circles in a predetermined order.
+        case eChallenges::CircularSequence:
+            return new CircularSequence(params);
         default:
             assert(false);
             return new Altruism(random, params);
@@ -210,6 +214,9 @@ std::vector<std::string> GetChallengeNames()
                 break;
             case eChallenges::Altruism:
                 names.push_back("Altruism");
+                break;
+            case eChallenges::CircularSequence:
+                names.push_back("CircularSequence");
                 break;
             default:
                 assert(false);

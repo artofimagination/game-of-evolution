@@ -41,6 +41,8 @@ set(MAIN_SOURCES
     ${PROJECT_SOURCE_DIR}/Challenges/CenterWeighted.h
     ${PROJECT_SOURCE_DIR}/Challenges/Circle.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/Circle.h
+    ${PROJECT_SOURCE_DIR}/Challenges/CircularSequence.cpp
+    ${PROJECT_SOURCE_DIR}/Challenges/CircularSequence.h
     ${PROJECT_SOURCE_DIR}/Challenges/Corner.cpp
     ${PROJECT_SOURCE_DIR}/Challenges/Corner.h
     ${PROJECT_SOURCE_DIR}/Challenges/CornerWeighted.cpp

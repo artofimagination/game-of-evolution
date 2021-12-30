@@ -56,8 +56,9 @@ public:
     Q_INVOKABLE QML::PairsSetup GetPairsSetup();
     Q_INVOKABLE QML::CircleSetup GetCenterWeightedSetup();
     Q_INVOKABLE QML::CenterSparsedSetup GetCenterSparsedSetup();
-    Q_INVOKABLE QML::CornerSetup GetCornerSetup();
-    Q_INVOKABLE QML::CornerSetup GetCornerWeightedSetup();
+    Q_INVOKABLE QML::MultiCircleSetup GetCornerSetup();
+    Q_INVOKABLE QML::MultiCircleSetup GetCircularSequenceSetup();
+    Q_INVOKABLE QML::MultiCircleSetup GetCornerWeightedSetup();
     Q_INVOKABLE QML::RadioactiveWallSetup GetRadioactiveWallSetup();
     Q_INVOKABLE QML::CircleSetup GetCenterUnweightedSetup();
     Q_INVOKABLE QML::RectangleSetup GetRightHalfSetup();

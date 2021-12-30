@@ -10,6 +10,7 @@
 #include "Challenges/CenterUnweighted.h"
 #include "Challenges/CenterWeighted.h"
 #include "Challenges/Circle.h"
+#include "Challenges/CircularSequence.h"
 #include "Challenges/Corner.h"
 #include "Challenges/CornerWeighted.h"
 #include "Challenges/EastWestEighths.h"
@@ -36,7 +37,7 @@ QObject* QMLInterface::StartBackend()
     qmlRegisterUncreatableType<QML::AnalyticsTypes>("backendGuiInterface", 1, 0, "AnalyticsTypes", "Not creatable as it is an enum type");
     qRegisterMetaType<QML::AltruismSetup>("AltruismSetup");
     qRegisterMetaType<QML::CircleSetup>("CircleSetup");
-    qRegisterMetaType<QML::CornerSetup>("CornerSetup");
+    qRegisterMetaType<QML::MultiCircleSetup>("MultiCircleSetup");
     qRegisterMetaType<QML::AnyWallSetup>("AnyWallSetup");
     qRegisterMetaType<QML::PairsSetup>("PairsSetup");
     qRegisterMetaType<QML::RectangleSetup>("RectangleSetup");
@@ -257,13 +258,13 @@ QML::CenterSparsedSetup QMLInterface::GetCenterSparsedSetup()
 }
 
 //-------------------------------------------------------------------------
-QML::CornerSetup QMLInterface::GetCornerSetup()
+QML::MultiCircleSetup QMLInterface::GetCornerSetup()
 {
     m_Mutex.lock();
     auto pChallenge = m_pBackendWorker->GetChallenge();
     auto setupInternal = static_cast<Challenges::Corner*>(pChallenge)->GetSetup();
     m_Mutex.unlock();
-    QML::CornerSetup setup;
+    QML::MultiCircleSetup setup;
     setup.color = QColor(0, 255, 0, 50);
     setup.radius = setupInternal.radius;
     for (const auto& center : setupInternal.centers)
@@ -274,13 +275,30 @@ QML::CornerSetup QMLInterface::GetCornerSetup()
 }
 
 //-------------------------------------------------------------------------
-QML::CornerSetup QMLInterface::GetCornerWeightedSetup()
+QML::MultiCircleSetup QMLInterface::GetCircularSequenceSetup()
+{
+    m_Mutex.lock();
+    auto pChallenge = m_pBackendWorker->GetChallenge();
+    auto setupInternal = static_cast<Challenges::CircularSequence*>(pChallenge)->GetSetup();
+    m_Mutex.unlock();
+    QML::MultiCircleSetup setup;
+    setup.color = QColor(0, 255, 0, 50);
+    setup.radius = setupInternal.radius;
+    for (const auto& center : setupInternal.centers)
+    {
+        setup.centers.push_back(QPoint(center.x, center.y));
+    }
+    return setup;
+}
+
+//-------------------------------------------------------------------------
+QML::MultiCircleSetup QMLInterface::GetCornerWeightedSetup()
 {
     m_Mutex.lock();
     auto pChallenge = m_pBackendWorker->GetChallenge();
     auto setupInternal = static_cast<Challenges::CornerWeighted*>(pChallenge)->GetSetup();
     m_Mutex.unlock();
-    QML::CornerSetup setup;
+    QML::MultiCircleSetup setup;
     setup.color = QColor(0, 255, 0, 50);
     setup.radius = setupInternal.radius;
     for (const auto& center : setupInternal.centers)

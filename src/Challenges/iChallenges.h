@@ -34,6 +34,7 @@ enum class eChallenges : uint16_t
     LocationSequence,
     Altruism,
     AltruismSacrifice,
+    CircularSequence,
     NoOfChallenges
 };
 
