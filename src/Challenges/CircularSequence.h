@@ -3,6 +3,8 @@
 #include "BasicTypes.h"
 #include "iChallenges.h"
 
+class Analytics;
+
 namespace Challenges
 {
 
@@ -11,6 +13,8 @@ namespace Challenges
 //! is 100% survival. The order is starting from the left most circle
 //! in counter clockwise direction.
 //! If they don't get in a circle they survival chance is 5%.
+//! They also have to finish the generation in the last valid circle they touched
+//! otherwise their chances will be halved.
 class CircularSequence : public iChallenge
 {
 public:
@@ -20,7 +24,7 @@ public:
         float radius;
     };
 
-    CircularSequence(const Parameters& params);
+    CircularSequence(const Parameters& params, Analytics& analytics);
 
     //! \copydoc iChallenge::EvaluateAtEndOfSimStep
     void EvaluateAtEndOfSimStep(
@@ -43,6 +47,7 @@ public:
 
 private:
     Setup m_Setup{};
+    Analytics& m_Analytics;
     std::vector<unsigned> m_PeepsTouchedCircles{0, 0, 0, 0, 0, 0, 0, 0};
 };
 

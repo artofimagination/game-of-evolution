@@ -23,28 +23,32 @@ public:
     // I means data about the individual, mainly stored in Indiv
     // W means data about the environment, mainly stored in Peeps or Grid
     enum eType {
-        LOC_X,             // I distance from left edge
-        LOC_Y,             // I distance from bottom
-        BOUNDARY_DIST_X,   // I X distance to nearest edge of world
-        BOUNDARY_DIST,     // I distance to nearest edge of world
-        BOUNDARY_DIST_Y,   // I Y distance to nearest edge of world
-        GENETIC_SIM_FWD,   // I genetic similarity forward
-        LAST_MOVE_DIR_X,   // I +- amount of X movement in last movement
-        LAST_MOVE_DIR_Y,   // I +- amount of Y movement in last movement
-        LONGPROBE_POP_FWD, // W long look for population forward
-        LONGPROBE_BAR_FWD, // W long look for barriers forward
-        POPULATION,        // W population density in neighborhood
-        POPULATION_FWD,    // W population density in the forward-reverse axis
-        POPULATION_LR,     // W population density in the left-right axis
-        OSC1,              // I oscillator +-value
-        AGE,               // I
-        BARRIER_FWD,       // W neighborhood barrier distance forward-reverse axis
-        BARRIER_LR,        // W neighborhood barrier distance left-right axis
-        RANDOM,            //   random sensor value, uniform distribution
-        SIGNAL0,           // W strength of signal0 in neighborhood
-        SIGNAL0_FWD,       // W strength of signal0 in the forward-reverse axis
-        SIGNAL0_LR,        // W strength of signal0 in the left-right axis
-        NUM_SENSES,        // <<------------------ END OF ACTIVE SENSES MARKER
+        LOC_X,              // I distance from left edge
+        LOC_Y,              // I distance from bottom
+        BOUNDARY_DIST_X,    // I X distance to nearest edge of world
+        BOUNDARY_DIST,      // I distance to nearest edge of world
+        BOUNDARY_DIST_Y,    // I Y distance to nearest edge of world
+        GENETIC_SIM_FWD,    // I genetic similarity forward
+        LAST_MOVE_DIR_X,    // I +- amount of X movement in last movement
+        LAST_MOVE_DIR_Y,    // I +- amount of Y movement in last movement
+        LONGPROBE_POP_FWD,  // W long look for population forward
+        LONGPROBE_BAR_FWD,  // W long look for barriers forward
+        POPULATION,         // W population density in neighborhood
+        POPULATION_FWD,     // W population density in the forward-reverse axis
+        POPULATION_LR,      // W population density in the left-right axis
+        OSC1,               // I oscillator +-value
+        AGE,                // I
+        BARRIER_FWD,        // W neighborhood barrier distance forward-reverse axis
+        BARRIER_LR,         // W neighborhood barrier distance left-right axis
+        RANDOM,             //   random sensor value, uniform distribution
+        SIGNAL0,            // W strength of signal0 in neighborhood
+        SIGNAL0_FWD,        // W strength of signal0 in the forward-reverse axis
+        SIGNAL0_LR,         // W strength of signal0 in the left-right axis
+        PlannedLocX,        // I reads the difference between current and planned loc x
+        PlannedLocY,        // I reads the difference between current and planned loc y
+        PlannedLocTime,     // I reads the difference between the current and planned sim step
+        ChallengeSuccess,   // I reads the completed challenge tasks.
+        NUM_SENSES,         // <<------------------ END OF ACTIVE SENSES MARKER
     };
 
     //! Updates the available sensor types vector.
@@ -58,6 +62,7 @@ public:
         const PeepsPool& peeps,
         uint8_t sensorTypeIndex,
         unsigned simStep,
+        unsigned oldestAge,
         const Grid& grid,
         const Parameters& params,
         RandomUintGenerator& random,
@@ -70,30 +75,27 @@ private:
 class Actions
 {
 public:
-    // Place the action neuron you want enabled prior to NUM_ACTIONS. Any
-    // that are after NUM_ACTIONS will be disabled in the simulator.
     // If new items are added to this enum, also update the name functions
-    // in analysis.cpp.
     // I means the action affects the peep internally (Peep)
     // W means the action also affects the environment (Peeps or Grid)
     enum eType {
-        MOVE_X,                   // W +- X component of movement
-        MOVE_Y,                   // W +- Y component of movement
-        MOVE_FORWARD,             // W continue last direction
-        MOVE_RL,                  // W +- component of movement
-        MOVE_RANDOM,              // W
         SET_OSCILLATOR_PERIOD,    // I
         SET_LONGPROBE_DIST,       // I
         SET_RESPONSIVENESS,       // I
         EMIT_SIGNAL0,             // W
-        MOVE_EAST,                // W
-        MOVE_WEST,                // W
-        MOVE_NORTH,               // W
-        MOVE_SOUTH,               // W
-        MOVE_LEFT,                // W
-        MOVE_RIGHT,               // W
-        MOVE_REVERSE,             // W
+        PlanPosX,                 // I
+        PlanPosY,                 // I
+        PlanTime,                 // I
         KILL_FORWARD,             // W
+        MOVE_NORTH,               // W
+        MOVE_NE,                  // W 
+        MOVE_EAST,                // W
+        MOVE_SE,                  // W
+        MOVE_SOUTH,               // W
+        MOVE_SW,                  // W
+        MOVE_WEST,                // W
+        MOVE_NW,                  // W
+        MOVE_RANDOM,              // W
         NUM_ACTIONS,              // <<----------------- END OF ACTIVE ACTIONS MARKER
     };
 
@@ -142,7 +144,7 @@ public:
     simulator step by endOfSimStep() in a single thread after all peeps have been
     evaluated multithreadedly.
     **********************************************************************************/
-    void executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &actionLevels);
+    void executeActions(Peep &peep, unsigned simStep, std::array<float, eType::NUM_ACTIONS> &actionLevels);
 
 private:
     std::vector<eType> m_AvailableTypes{};         ///!< Contains the available action types.

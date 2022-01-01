@@ -29,17 +29,42 @@ void Peep::initialize(
 {
     index = index_;
     loc = loc_;
-    //birthLoc = loc_;
+    plannedLoc = loc_;
+    plannedSimStep = 0;
+    planTimeUpdateStep = 0;
+    birthLoc = loc_;
     grid.set(loc_, index_);
     age = 0;
     oscPeriod = 34; // ToDo !!! define a constant
     alive = true;
+    survivedToNextGen = false;
     lastMoveDir = Dir::random8(random);
     responsiveness = 0.5; // range 0.0..1.0
     longProbeDist = m_Params.longProbeDistance;
-    challengeBits = 0; // will be set true when some task gets accomplished
+    challengeBits = 0; // will be set non zero when some task gets accomplished
     genome = std::move(genome_);
     createWiringFromGenome(sensorTypeCount, actionTypeCount);
+}
+
+//-------------------------------------------------------------------------
+void Peep::relocate(
+    Coord loc_,
+    RandomUintGenerator& random,
+    Grid& grid)
+{
+    loc = loc_;
+    plannedLoc = loc_;
+    plannedSimStep = 0;
+    planTimeUpdateStep = 0;
+    birthLoc = loc_;
+    grid.set(loc_, index);
+    oscPeriod = 34; // ToDo !!! define a constant
+    alive = true;
+    survivedToNextGen = false;
+    lastMoveDir = Dir::random8(random);
+    responsiveness = 0.5; // range 0.0..1.0
+    longProbeDist = m_Params.longProbeDistance;
+    challengeBits = 0; // will be set non zero when some task gets accomplished
 }
 
 //-------------------------------------------------------------------------
@@ -220,6 +245,7 @@ void Peep::createWiringFromGenome(uint8_t sensorTypeCount, uint8_t actionTypeCou
 //-------------------------------------------------------------------------
 std::array<float, Actions::eType::NUM_ACTIONS> Peep::feedForward(
     unsigned simStep,
+    unsigned oldestAge,
     const PeepsPool& peeps,
     const PheromoneSignals& pheromoneSignals,
     const Sensors& sensors,
@@ -229,6 +255,10 @@ std::array<float, Actions::eType::NUM_ACTIONS> Peep::feedForward(
     // contains one value per action neuron, which is the sum of all its weighted
     // input connections. The sum has an arbitrary range. Return by value assumes compiler
     // return value optimization.
+    // The array index is not the action type, but the index of the Actions::m_AvailableTypes,
+    // that holds the actual action type.
+    // For example if Actions::m_AvailableTypes[2] = Actions::eType::SET_RESPONSIVENESS,
+    // then the corresponding actionLevel is actionLevels[2]
     std::array<float, Actions::eType::NUM_ACTIONS> actionLevels;
     actionLevels.fill(0.0); // undriven actions default to value 0.0
 
@@ -259,7 +289,16 @@ std::array<float, Actions::eType::NUM_ACTIONS> Peep::feedForward(
         // The values are summed for now, later passed through a transfer function
         float inputVal;
         if (conn.sourceType == Genetics::SENSOR) {
-            inputVal = sensors.getSensor(*this, peeps, (Sensors::eType)conn.sourceNum, simStep, m_Grid, m_Params, random, pheromoneSignals);
+            inputVal = sensors.getSensor(
+                *this,
+                peeps,
+                (Sensors::eType)conn.sourceNum,
+                simStep,
+                oldestAge,
+                m_Grid,
+                m_Params,
+                random,
+                pheromoneSignals);
         } else {
             inputVal = nnet.neurons[conn.sourceNum].output;
         }

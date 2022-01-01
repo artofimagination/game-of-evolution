@@ -472,6 +472,34 @@ QVariantList QMLInterface::GetSurvivors() const
 }
 
 //-------------------------------------------------------------------------
+QVariantList QMLInterface::GetSurvivorsToNextGen() const
+{
+    QVariantList lineGraphs{};
+    QList<QVariant> survivorsUI{};
+    auto survivors = m_pBackendWorker->GetSurvivorsToNextGen();
+    for (size_t i = 0; i < survivors.second.size(); ++i)
+    {
+        survivorsUI.push_back(QPointF(survivors.first + i, survivors.second.at(i)));
+    }
+    lineGraphs.push_back(survivorsUI);
+    return lineGraphs;
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetAvgAges() const
+{
+    QVariantList lineGraphs{};
+    QList<QVariant> uiData{};
+    auto data = m_pBackendWorker->GetAvgAges();
+    for (size_t i = 0; i < data.second.size(); ++i)
+    {
+        uiData.push_back(QPointF(data.first + i, data.second.at(i)));
+    }
+    lineGraphs.push_back(uiData);
+    return lineGraphs;
+}
+
+//-------------------------------------------------------------------------
 QVariantList QMLInterface::GetGeneticDiversity() const
 {
     QVariantList lineGraphs{};
@@ -483,6 +511,27 @@ QVariantList QMLInterface::GetGeneticDiversity() const
         dataUI.push_back(QPointF(dataVector.first + i, y));
     }
     lineGraphs.push_back(dataUI);
+    return lineGraphs;
+}
+
+//-------------------------------------------------------------------------
+QVariantList QMLInterface::GetCompletedChallengeTaskCounts() const
+{
+    QVariantList lineGraphs{};
+    QList<QVariant> dataUI{};
+    auto dataVector = m_pBackendWorker->GetCompletedChallengeTaskCounts();
+    for (size_t i = 0; i < dataVector.second.size(); ++i)
+    { 
+        auto tasks = dataVector.second.at(i);
+        for (size_t j = 0; j < tasks.size(); ++j)
+        {
+            auto y = tasks.at(j);
+            dataUI.push_back(QPointF(dataVector.first + j, y));
+        }
+        lineGraphs.push_back(dataUI);
+        dataUI.clear();
+    }
+    
     return lineGraphs;
 }
 

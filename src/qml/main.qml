@@ -20,8 +20,8 @@ Rectangle {
     function updateCanvasSize(){
         var scaledPeepRadius = simulatorCanvas.peepRadius * backendInterface.UiScale()
         var frameSize = backendInterface.GetFrameSize()
-        canvasRectangle.width = frameSize.width * backendInterface.UiScale() + scaledPeepRadius
-        canvasRectangle.height = frameSize.height * backendInterface.UiScale() + scaledPeepRadius
+        canvasRectangle.width = frameSize.width * backendInterface.UiScale() + scaledPeepRadius * 4
+        canvasRectangle.height = frameSize.height * backendInterface.UiScale() + scaledPeepRadius * 4
         simulatorCanvas.scaling = backendInterface.UiScale()
     }
 
@@ -137,8 +137,24 @@ Rectangle {
             case AnalyticsTypes.Survivors:
                 analyticsTab.addInput("red", "Survivors", 0)
                 break
+            case AnalyticsTypes.SurvivorToNextGen:
+                analyticsTab.addInput("red", "Survivors to Next gen", 0)
+                break
             case AnalyticsTypes.GeneticDiversity:
                 analyticsTab.addInput("red", "GeneticDiversity", 0)
+                break
+            case AnalyticsTypes.AvgAge:
+                analyticsTab.addInput("red", "Average Ages", 0)
+                break
+            case AnalyticsTypes.CompletedTasks:
+                analyticsTab.addInput("red", "Task 1", 0)
+                analyticsTab.addInput("green", "Task 2", 0)
+                analyticsTab.addInput("blue", "Task 3", 0)
+                analyticsTab.addInput("grey", "Task 4", 0)
+                analyticsTab.addInput("yellow", "Task 5", 0)
+                analyticsTab.addInput("purple", "Task 6", 0)
+                analyticsTab.addInput("cyan", "Task 7", 0)
+                analyticsTab.addInput("darkgreen", "Task 8", 0)
                 break
             default:
                 break
@@ -151,8 +167,17 @@ Rectangle {
             case AnalyticsTypes.Survivors:
                 var data = backendInterface.GetSurvivors()
                 break
+            case AnalyticsTypes.SurvivorToNextGen:
+                var data = backendInterface.GetSurvivorsToNextGen()
+                break
             case AnalyticsTypes.GeneticDiversity:
                 var data = backendInterface.GetGeneticDiversity()
+                break
+            case AnalyticsTypes.AvgAge:
+                var data = backendInterface.GetAvgAges()
+                break
+            case AnalyticsTypes.CompletedTasks:
+                var data = backendInterface.GetCompletedChallengeTaskCounts()
                 break
             default:
                 break
@@ -256,6 +281,7 @@ Rectangle {
                     }
 
                     onClicked: {
+                        analyticsTab.removeAllSeries()
                         backendInterface.ResetSim()
                     }
                 }

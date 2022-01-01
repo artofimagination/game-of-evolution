@@ -30,11 +30,6 @@ class ChartsConnector
     Q_PROPERTY(double minY2 READ MinY2 NOTIFY ValueChanged)
     Q_PROPERTY(double maxY2 READ MaxY2 NOTIFY ValueChanged)
 public:
-    //! Constructor
-    explicit ChartsConnector(QObject* pParent = nullptr)
-        : QObject(pParent)
-    {}
-
     //! Updates series.
     Q_INVOKABLE void UpdateSeries();
 

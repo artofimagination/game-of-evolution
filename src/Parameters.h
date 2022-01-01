@@ -17,7 +17,6 @@ struct Parameters {
     double pointMutationRate{};                     // 0.0..1.0
     double geneInsertionDeletionRate{};             // 0.0..1.0
     double deletionRatio{};                         // 0.0..1.0
-    bool killEnable{};    
     bool sexualReproduction{};    
     bool chooseParentsByFitness{};    
     float populationSensorRadius{1};                // > 0.0

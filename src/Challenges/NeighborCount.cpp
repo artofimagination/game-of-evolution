@@ -14,8 +14,8 @@ NeighborCount::NeighborCount(const Parameters& params)
     : m_Params(params)
 {
     m_Setup.borders = { 0, 1, 2, 3 };
-    m_Setup.minNeighbors = 20;
-    m_Setup.maxNeighbors = 22;
+    m_Setup.minNeighbors = 5;
+    m_Setup.maxNeighbors = 13;
     m_Setup.radius = 2.5;
 }
 

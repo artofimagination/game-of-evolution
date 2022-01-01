@@ -12,7 +12,7 @@ CenterWeighted::CenterWeighted(const Parameters& params)
     : m_Params(params)
 {
     m_Setup.safeCenter = { (int16_t)(params.sizeX / 2.0), (int16_t)(params.sizeY / 2.0) };
-    m_Setup.radius = params.sizeX / 3.0;
+    m_Setup.radius = params.sizeX / 6.0;
 }
 
 //-------------------------------------------------------------------------

@@ -40,6 +40,10 @@ std::string sensorName(Sensors::eType sensor)
     case Sensors::eType::SIGNAL0_FWD: return "signal 0 fwd"; break;
     case Sensors::eType::SIGNAL0_LR: return "signal 0 LR"; break;
     case Sensors::eType::GENETIC_SIM_FWD: return "genetic similarity fwd"; break;
+    case Sensors::eType::PlannedLocX: return "planned loc x diff"; break;
+    case Sensors::eType::PlannedLocY: return "planned loc y diff"; break;
+    case Sensors::eType::PlannedLocTime: return "planned time diff"; break;
+    case Sensors::eType::ChallengeSuccess: return "challenge success"; break;
     default: assert(false); break;
     }
 }
@@ -69,6 +73,10 @@ std::string sensorShortName(Sensors::eType sensor)
     case Sensors::eType::SIGNAL0_FWD: return "Sfd"; break;
     case Sensors::eType::SIGNAL0_LR: return "Slr"; break;
     case Sensors::eType::GENETIC_SIM_FWD: return "Gen"; break;
+    case Sensors::eType::PlannedLocX: return "PXd"; break;
+    case Sensors::eType::PlannedLocY: return "PYd"; break;
+    case Sensors::eType::PlannedLocTime: return "Ptd"; break;
+    case Sensors::eType::ChallengeSuccess: return "ChS"; break;
     default: assert(false); break;
     }
 }
@@ -81,19 +89,19 @@ std::string actionShortName(Actions::eType action)
     case Actions::eType::MOVE_WEST: return "MvW"; break;
     case Actions::eType::MOVE_NORTH: return "MvN"; break;
     case Actions::eType::MOVE_SOUTH: return "MvS"; break;
-    case Actions::eType::MOVE_X: return "MvX"; break;
-    case Actions::eType::MOVE_Y: return "MvY"; break;
-    case Actions::eType::MOVE_FORWARD: return "Mfd"; break;
+    case Actions::eType::MOVE_NE: return "MNe"; break;
+    case Actions::eType::MOVE_SE: return "MSe"; break;
+    case Actions::eType::MOVE_SW: return "MSw"; break;
+    case Actions::eType::MOVE_NW: return "MNw"; break;
     case Actions::eType::SET_RESPONSIVENESS: return "Res"; break;
     case Actions::eType::SET_OSCILLATOR_PERIOD: return "OSC"; break;
     case Actions::eType::EMIT_SIGNAL0: return "SG"; break;
     case Actions::eType::KILL_FORWARD: return "Klf"; break;
-    case Actions::eType::MOVE_REVERSE: return "Mrv"; break;
-    case Actions::eType::MOVE_LEFT: return "MvL"; break;
-    case Actions::eType::MOVE_RIGHT: return "MvR"; break;
-    case Actions::eType::MOVE_RL: return "MRL"; break;
     case Actions::eType::MOVE_RANDOM: return "Mrn"; break;
     case Actions::eType::SET_LONGPROBE_DIST: return "LPD"; break;
+    case Actions::eType::PlanPosX: return "PlX"; break;
+    case Actions::eType::PlanPosY: return "PlY"; break;
+    case Actions::eType::PlanTime: return "Pss"; break;
     default: assert(false); break;
     }
 }
@@ -106,19 +114,19 @@ std::string actionName(Actions::eType action)
     case Actions::eType::MOVE_WEST: return "move west"; break;
     case Actions::eType::MOVE_NORTH: return "move north"; break;
     case Actions::eType::MOVE_SOUTH: return "move south"; break;
-    case Actions::eType::MOVE_FORWARD: return "move fwd"; break;
-    case Actions::eType::MOVE_X: return "move X"; break;
-    case Actions::eType::MOVE_Y: return "move Y"; break;
+    case Actions::eType::MOVE_NE: return "move north east"; break;
+    case Actions::eType::MOVE_SE: return "move south east"; break;
+    case Actions::eType::MOVE_SW: return "move south west"; break;
     case Actions::eType::SET_RESPONSIVENESS: return "set inv-responsiveness"; break;
     case Actions::eType::SET_OSCILLATOR_PERIOD: return "set osc1"; break;
     case Actions::eType::EMIT_SIGNAL0: return "emit signal 0"; break;
     case Actions::eType::KILL_FORWARD: return "kill fwd"; break;
-    case Actions::eType::MOVE_REVERSE: return "move reverse"; break;
-    case Actions::eType::MOVE_LEFT: return "move left"; break;
-    case Actions::eType::MOVE_RIGHT: return "move right"; break;
-    case Actions::eType::MOVE_RL: return "move R-L"; break;
+    case Actions::eType::MOVE_NW: return "move north west"; break;
     case Actions::eType::MOVE_RANDOM: return "move random"; break;
     case Actions::eType::SET_LONGPROBE_DIST: return "set longprobe dist"; break;
+    case Actions::eType::PlanPosX: return "planned loc x"; break;
+    case Actions::eType::PlanPosY: return "planned loc y"; break;
+    case Actions::eType::PlanTime: return "planned sim step"; break;
     default: assert(false); break;
     }
 }
@@ -217,6 +225,7 @@ float Sensors::getSensor(
     const PeepsPool& peeps,
     uint8_t sensorTypeIndex,
     unsigned simStep,
+    unsigned oldestAge,
     const Grid& grid,
     const Parameters& params,
     RandomUintGenerator& random,
@@ -230,7 +239,7 @@ float Sensors::getSensor(
     case eType::AGE:
         // Converts age (units of simSteps compared to life expectancy)
         // linearly to normalized sensor range 0.0..1.0
-        sensorVal = (float)peep.age / params.stepsPerGeneration;
+        sensorVal = (float)peep.age / oldestAge == 0 ? params.stepsPerGeneration : oldestAge;
         break;
     case eType::BOUNDARY_DIST:
     {
@@ -382,13 +391,37 @@ float Sensors::getSensor(
         }
         break;
     }
+    case eType::PlannedLocX:
+        // Gets the difference between the planned and actual loc x converts it to 0..1.0 range
+        // where 0 means +-sizeX difference 1.0 means 0 difference.
+        sensorVal = 1.0 - (abs(peep.plannedLoc.x - peep.loc.x) / float(params.sizeX));
+        break;
+    case eType::PlannedLocY:
+        // Gets the difference between the planned and actual loc y converts it to 0..1.0 range
+        // where 0 means +-sizeY difference 1.0 means 0 difference.
+        sensorVal = 1.0 - (abs(peep.plannedLoc.y - peep.loc.y) / float(params.sizeY));
+        break;
+    case eType::PlannedLocTime:
+        // Gets the difference between the planned and actual sim step time converts it to 0..1.0 range
+        // where 0 means the max difference possible 1.0 the planned time is reached.
+        assert(params.stepsPerGeneration > 0);
+        sensorVal = 1.0 - (abs(peep.plannedSimStep - simStep) / float(params.stepsPerGeneration - peep.planTimeUpdateStep));
+        break;
+    case eType::ChallengeSuccess:
+    {
+        // Gets the number of completed challenge tasks and normalizes to 0..1.0.
+        // It simulates success feeling.
+        auto maxNumberOfBits = 8;
+        sensorVal = peep.challengeBits / static_cast<float>(maxNumberOfBits);
+        break;
+    }
     default:
         assert(false);
         break;
     }
 
     if (std::isnan(sensorVal) || sensorVal < -0.01 || sensorVal > 1.01) {
-        std::cout << "sensorVal=" << (int)sensorVal << " for " << SensorsActions::sensorName((eType)sensorType) << std::endl;
+        //std::cout << "sensorVal=" << (int)sensorVal << " for " << SensorsActions::sensorName((eType)sensorType) << std::endl;
         sensorVal = std::max(0.0f, std::min(sensorVal, 1.0f)); // clip
     }
 
@@ -413,26 +446,32 @@ Actions::Actions(
 }
 
 //---------------------------------------------------------------------------
-void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &actionLevels)
+void Actions::executeActions(Peep &peep, unsigned simStep, std::array<float, eType::NUM_ACTIONS> &actionLevels)
 {
     // Except eType::SET_RESPONSIVENESS all the action outputs, we'll apply an adjusted responsiveness
     // factor (see responseCurve() for more info). Range 0.0..1.0.
     float responsivenessAdjusted = AlgorithmHelpers::responseCurve(peep.responsiveness, m_Params);
     
     // Movement related variables.
-    float level{};
     Coord offset{};
-    Coord lastMoveOffset = peep.lastMoveDir.asNormalizedCoord();
     // moveX,moveY will be the accumulators that will hold the sum of all the
     // urges to move along each axis. (+- floating values of arbitrary range).
     float moveX = 0.0;
     float moveY = 0.0;
+    float level = 0.0;
+    unsigned movementActionTypeCount = 0;
 
-    // Only a subset of all possible actions might be enabled (i.e., compiled in).
-    // This returns true if the specified action is enabled. See sensors-actions.h
-    // for how to enable sensors and actions during compilation.
-    for (const auto& type : m_AvailableTypes)
-    { 
+    // Check all the action listed in the available types. 
+    // The list can be modified from outside the backend (i.e UI)
+    for (size_t i = 0; i < m_AvailableTypes.size(); ++i)
+    {   
+        if (m_AvailableTypes[i] >= static_cast<unsigned>(Actions::eType::MOVE_NORTH) && 
+            m_AvailableTypes[i] != static_cast<unsigned>(Actions::eType::NUM_ACTIONS))
+            movementActionTypeCount++;
+
+        // actionLevels index is representing the index of the type in m_AvailableTypes.
+        const auto& type = m_AvailableTypes[i];
+        level = actionLevels[i];
         switch (type)
         {
             // Responsiveness action - convert neuron action level from arbitrary float range
@@ -440,7 +479,6 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             // default to mid-level 0.5.
             case Actions::eType::SET_RESPONSIVENESS:
             {
-                float level = actionLevels[Actions::eType::SET_RESPONSIVENESS]; // default 0.0
                 level = (std::tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
                 peep.responsiveness = level;
                 break;
@@ -450,8 +488,7 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             // will default to 1.5 + e^(3.5) = a period of 34 simSteps.
             case Actions::eType::SET_OSCILLATOR_PERIOD:
             {
-                auto periodf = actionLevels[Actions::eType::SET_OSCILLATOR_PERIOD];
-                float newPeriodf01 = (std::tanh(periodf) + 1.0) / 2.0; // convert to 0.0..1.0
+                float newPeriodf01 = (std::tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
                 unsigned newPeriod = 1 + (int)(1.5 + std::exp(7.0 * newPeriodf01));
                 assert(newPeriod >= 2 && newPeriod <= 2048);
                 peep.oscPeriod = newPeriod;
@@ -463,7 +500,6 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             case Actions::eType::SET_LONGPROBE_DIST:
             {
                 constexpr unsigned maxLongProbeDistance = 32;
-                float level = actionLevels[Actions::eType::SET_LONGPROBE_DIST];
                 level = (std::tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
                 level = 1 + level * maxLongProbeDistance;
                 peep.longProbeDist = (unsigned)level;
@@ -477,7 +513,6 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             case Actions::eType::EMIT_SIGNAL0:
             {
                 constexpr float emitThreshold = 0.5;  // 0.0..1.0; 0.5 is midlevel
-                float level = actionLevels[Actions::eType::EMIT_SIGNAL0];
                 level = (std::tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
                 level *= responsivenessAdjusted;
                 if (level > emitThreshold && AlgorithmHelpers::prob2bool(level, m_Random)) {
@@ -491,7 +526,6 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             case Actions::eType::KILL_FORWARD:
             {
                 constexpr float killThreshold = 0.5;  // 0.0..1.0; 0.5 is midlevel
-                float level = actionLevels[Actions::eType::KILL_FORWARD];
                 level = (std::tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
                 level *= responsivenessAdjusted;
                 if (level > killThreshold && AlgorithmHelpers::prob2bool((level - SensorsActions::ACTION_MIN) / SensorsActions::ACTION_RANGE, m_Random)) {
@@ -504,6 +538,36 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
                 }
                 break;
             }
+            // ------------- Planning related intranetwork action neurons ---------------
+
+            // These actions neurons are used for planning, forecasting the future. They only used intranet.
+
+            // Sets the planned location x to somewhere between 0 and sizeX.
+            case Actions::eType::PlanPosX:
+            {
+                level = (std::tanh(level) + 1.0) / 2.0;
+                level *= responsivenessAdjusted;
+                peep.plannedLoc.x = level * m_Params.sizeX;
+                break;
+            }
+            // Sets the planned location y to somewhere between 0 and sizeY.
+            case Actions::eType::PlanPosY:
+            {
+                level = (std::tanh(level) + 1.0) / 2.0;
+                level *= responsivenessAdjusted;
+                peep.plannedLoc.y = level * m_Params.sizeY;
+                break;
+            }
+            // Sets the planned planned time between the current sim step and the max sim step.
+            case Actions::eType::PlanTime:
+            {
+                level = (std::tanh(level) + 1.0) / 2.0;
+                level *= responsivenessAdjusted;
+                peep.plannedSimStep = level * (m_Params.stepsPerGeneration - simStep) + simStep;
+                peep.planTimeUpdateStep = simStep;
+                break;
+            }
+
             // ------------- Movement action neurons ---------------
 
             // There are multiple action neurons for movement. Each type of movement neuron
@@ -521,66 +585,48 @@ void Actions::executeActions(Peep &peep, std::array<float, eType::NUM_ACTIONS> &
             //     Xprob, Yprob == 99.9%, 29% probability of X and Y becoming 1 (or -1)
             //     X, Y == -1, 0 after applying the sign and probability
             //     The agent will then be moved West (an offset of -1, 0) if it's a legal move.
-            case Actions::eType::MOVE_X:
-                moveX = actionLevels[Actions::eType::MOVE_X];
-                break;
-            case Actions::eType::MOVE_Y:
-                moveY = actionLevels[Actions::eType::MOVE_Y];
-                break;
             case Actions::eType::MOVE_EAST:
-                moveX += actionLevels[Actions::eType::MOVE_EAST];
+                moveX += (std::tanh(level) + 1.0) / 2.0;
                 break;
             case Actions::eType::MOVE_WEST:
-                moveX -= actionLevels[Actions::eType::MOVE_WEST];
+                moveX -= (std::tanh(level) + 1.0) / 2.0;
                 break;
             case Actions::eType::MOVE_NORTH:
-                moveY += actionLevels[Actions::eType::MOVE_NORTH];
+                moveY += (std::tanh(level) + 1.0) / 2.0;
                 break;
             case Actions::eType::MOVE_SOUTH:
-                moveY -= actionLevels[Actions::eType::MOVE_SOUTH];
+                moveY -= (std::tanh(level) + 1.0) / 2.0;
                 break;
-            case Actions::eType::MOVE_FORWARD:
-                level = actionLevels[Actions::eType::MOVE_FORWARD];
-                moveX += lastMoveOffset.x * level;
-                moveY += lastMoveOffset.y * level;
+            case Actions::eType::MOVE_NE:
+                moveX += (std::tanh(level) + 1.0) / 2.0;
+                moveY += (std::tanh(level) + 1.0) / 2.0;
                 break;
-            case Actions::eType::MOVE_REVERSE:
-                level = actionLevels[Actions::eType::MOVE_REVERSE];
-                moveX -= lastMoveOffset.x * level;
-                moveY -= lastMoveOffset.y * level;
+            case Actions::eType::MOVE_SE:
+                moveX += (std::tanh(level) + 1.0) / 2.0;
+                moveY -= (std::tanh(level) + 1.0) / 2.0;
                 break;
-            case Actions::eType::MOVE_LEFT:
-                level = actionLevels[Actions::eType::MOVE_LEFT];
-                offset = peep.lastMoveDir.rotate90DegCCW().asNormalizedCoord();
-                moveX += offset.x * level;
-                moveY += offset.y * level;
+            case Actions::eType::MOVE_SW:
+                moveX -= (std::tanh(level) + 1.0) / 2.0;
+                moveY -= (std::tanh(level) + 1.0) / 2.0;
                 break;
-            case Actions::eType::MOVE_RIGHT:
-                level = actionLevels[Actions::eType::MOVE_RIGHT];
-                offset = peep.lastMoveDir.rotate90DegCW().asNormalizedCoord();
-                moveX += offset.x * level;
-                moveY += offset.y * level;
-                break;
-            case Actions::eType::MOVE_RL:
-                level = actionLevels[Actions::eType::MOVE_RL];
-                offset = peep.lastMoveDir.rotate90DegCW().asNormalizedCoord();
-                moveX += offset.x * level;
-                moveY += offset.y * level;
+            case Actions::eType::MOVE_NW:
+                moveX -= (std::tanh(level) + 1.0) / 2.0;
+                moveY += (std::tanh(level) + 1.0) / 2.0;
                 break;
             case Actions::eType::MOVE_RANDOM:
-                level = actionLevels[Actions::eType::MOVE_RANDOM];
                 offset = Dir::random8(m_Random).asNormalizedCoord();
-                moveX += offset.x * level;
-                moveY += offset.y * level;
+                moveX += offset.x * (std::tanh(level) + 1.0) / 2.0;
+                moveY += offset.y * (std::tanh(level) + 1.0) / 2.0;
+                break;
             default:
               break;
         }
     }
 
     // Convert the accumulated X, Y sums to the range -1.0..1.0 and scale by the
-    // peep's responsiveness (0.0..1.0) (adjusted by a curve)
-    moveX = std::tanh(moveX);
-    moveY = std::tanh(moveY);
+    // peep's responsiveness (0.0..1.0) (adjusted by a curve)y
+    moveX /= movementActionTypeCount;
+    moveY /= movementActionTypeCount;
     moveX *= responsivenessAdjusted;
     moveY *= responsivenessAdjusted;
 

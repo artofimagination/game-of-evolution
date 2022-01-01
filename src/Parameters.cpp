@@ -29,7 +29,6 @@ void ParameterIO::SetDefaults()
     privParams.pointMutationRate = 0.0001;
     privParams.geneInsertionDeletionRate = 0.0001;
     privParams.deletionRatio = 0.7;
-    privParams.killEnable = false;
     privParams.sexualReproduction = true;
     privParams.chooseParentsByFitness = true;
     privParams.populationSensorRadius = 2.0;
@@ -203,9 +202,6 @@ void ParameterIO::ingestParameter(std::string name, std::string val)
         else if (name == "deletionratio" && isFloat && dVal >= 0.0 && dVal <= 1.0) {
             privParams.deletionRatio = dVal; break;
         }
-        else if (name == "killenable" && isBool) {
-            privParams.killEnable = bVal; break;
-        }
         else if (name == "sexualreproduction" && isBool) {
             privParams.sexualReproduction = bVal; break;
         }
@@ -290,7 +286,6 @@ void ParameterIO::WriteToConfigFile(const std::string& filename)
         file << "pointmutationrate = " << privParams.pointMutationRate << std::endl;
         file << "geneinsertiondeletionrate = " << privParams.geneInsertionDeletionRate << std::endl;
         file << "deletionratio = " << privParams.deletionRatio << std::endl;
-        file << "killenable = " << privParams.killEnable << std::endl;
         file << "sexualreproduction = " << privParams.sexualReproduction << std::endl;
         file << "chooseparentsbyfitness = " << privParams.chooseParentsByFitness << std::endl;
         file << "chooseparentsbyfitness = " << privParams.chooseParentsByFitness << std::endl;

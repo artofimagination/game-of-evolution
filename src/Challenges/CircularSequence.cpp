@@ -1,5 +1,6 @@
 #include "CircularSequence.h"
 
+#include "Analytics.h"
 #include "Parameters.h"
 #include "Peep.h"
 #include "PeepsPool.h"
@@ -11,7 +12,8 @@ namespace Challenges
 {
 
 //-------------------------------------------------------------------------
-CircularSequence::CircularSequence(const Parameters& params)
+CircularSequence::CircularSequence(const Parameters& params, Analytics& analytics)
+    : m_Analytics(analytics)
 {
     auto worldCenter = Coord {(int16_t)(params.sizeX / 2), (int16_t)( params.sizeY / 2)};
     auto distance = 2 * params.sizeX / 6;
@@ -35,9 +37,7 @@ std::vector<std::pair<uint16_t, float> >& CircularSequence::EvaluateWhenNewGener
     const Grid& grid,
     const Settings& settings)
 {
-    for(auto countVal : m_PeepsTouchedCircles)
-        std::cout << countVal << " ";
-    std::cout << std::endl;
+    m_Analytics.AddCompletedChallengeTaskCounts(m_PeepsTouchedCircles);
     m_PeepsTouchedCircles = {0, 0, 0, 0, 0, 0, 0, 0};
     return iChallenge::EvaluateWhenNewGeneration(peeps, params, grid, settings);
 } 
@@ -48,6 +48,20 @@ std::pair<bool, float> CircularSequence::PassedCriteria(const Peep& peep, const 
     unsigned count = 0;
     unsigned bits = peep.challengeBits;
     unsigned maxNumberOfBits = 8;
+    bool finishedInCircle = false;
+    unsigned challengeBits = 0;
+
+    // Check if the peep ended up in a circle.
+    for (unsigned n = 0; n < m_Setup.centers.size(); ++n) {
+        unsigned bit = 1 << n;
+        challengeBits |= bit;
+        Coord offset = m_Setup.centers[n] - peep.loc;
+        float distance = offset.length();
+        if (distance <= m_Setup.radius && peep.challengeBits == challengeBits) {
+            finishedInCircle = true;
+            break;
+        }
+    }
 
     for (unsigned n = 0; n < maxNumberOfBits; ++n) {
         if ((bits & (1 << n)) == 0) {
@@ -58,9 +72,11 @@ std::pair<bool, float> CircularSequence::PassedCriteria(const Peep& peep, const 
     }
 
     if (count > 0) {
-        return { true, count / (float)maxNumberOfBits };
+        auto chance = count / (float)maxNumberOfBits;
+        chance *=chance;
+        return { true, finishedInCircle ? chance : chance / 2.0 };
     } else {
-        return { false, 0.05 };
+        return { false, 0.005 };
     }
 };
 
@@ -74,10 +90,11 @@ void CircularSequence::EvaluateAtEndOfSimStep(
     for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
         Peep &peep = peeps[index];
         for (unsigned n = 0; n < m_Setup.centers.size(); ++n) {
+            unsigned previousBitSet = (n == 0 ? 1 : peep.challengeBits & (1 << (n - 1)));
             unsigned bit = 1 << n;
             Coord offset = m_Setup.centers[n] - peep.loc;
             float distance = offset.length();
-            if ((peep.challengeBits & bit) == 0) {
+            if (previousBitSet && (peep.challengeBits & bit) == 0) {
                 if (distance <= m_Setup.radius) {
                     peep.challengeBits |= bit;
                 }

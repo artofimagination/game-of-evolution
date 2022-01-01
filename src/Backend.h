@@ -78,8 +78,14 @@ public:
     std::vector<std::string> GetChallengeNames() const;
     //! Returns the vector of survivors not sent out yet alongside the last processed index.
     std::pair<unsigned, std::vector<unsigned> > GetSurvivors() const;
+    //! Returns the vector of survivors to next gen not sent out yet alongside the last processed index.
+    std::pair<unsigned, std::vector<unsigned> > GetSurvivorsToNextGen() const;
+    //! Returns the vector of avg ages not sent out yet alongside the last processed index.
+    std::pair<unsigned, std::vector<float> > GetAvgAges() const;
     //! Returns the vector of genetic diversities not sent out yet alongside the last processed index.
     std::pair<unsigned, std::vector<float> > GetGeneticDiversity() const;
+    //! Returns the vector of completing peeps counts for each challenge task not sent out yet alongside the last processed index.
+    std::pair<unsigned, std::vector<std::vector<unsigned> > > GetCompletedChallengeTaskCounts() const;
     //! Returns the available analytics types.
     std::vector<std::string> GetAnalyticsTypes() const;
     //! Clears all processed counts in analytics.
@@ -101,7 +107,7 @@ private:
     Execute one simStep for one individual.
 
     This executes in its own thread, invoked from the main simulator thread. First we execute
-    indiv.feedForward() which computes action values to be executed here. Some actions such as
+    peep.feedForward() which computes action values to be executed here. Some actions such as
     signal emission(s) (pheromones), agent movement, or deaths will have been queued for
     later execution at the end of the generation in single-threaded mode (the deferred queues
     allow the main data structures (e.g., grid, signals) to be freely accessed read-only in all threads).
@@ -173,5 +179,4 @@ private:
     std::vector<std::unique_ptr<Barriers::iBarrier> > m_Barriers{};                                 ///< Holds the current barriers
     unsigned                                          m_Generation{0};                              ///< Stores the generation count
     unsigned                                          m_SimStep{0};                                 ///< Stores the simulation step count.
-    
 };

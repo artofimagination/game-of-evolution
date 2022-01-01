@@ -206,8 +206,14 @@ void Backend::Run()
 void Backend::SimStepOnePeep(Peep &peep, unsigned simStep, RandomUintGenerator& random)
 {
     ++peep.age; // for this implementation, tracks simStep
-    auto actionLevels = peep.feedForward(simStep, *m_xPeeps.get(), *m_xSignals.get(), *m_xSensors.get(), random);
-    m_xActions->executeActions(peep, actionLevels);
+    auto actionLevels = peep.feedForward(
+        simStep,
+        m_xGenerationGenerator->GetOldestAge(),
+        *m_xPeeps.get(),
+        *m_xSignals.get(),
+        *m_xSensors.get(),
+        random);
+    m_xActions->executeActions(peep, simStep, actionLevels);
 }
 
 //---------------------------------------------------------------------------
@@ -310,6 +316,7 @@ void Backend::SetChallengeId(unsigned id)
         std::unique_ptr<Challenges::iChallenge>(Challenges::CreateChallenge(
             m_CurrentChallenge,
             *m_xRandomGenerator.get(),
+            *m_xAnalytics.get(),
             m_xParameterIO->GetParamRef()));
     // Inform the state machine about the parameter action completion.
     m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::FinishAction);
@@ -342,7 +349,7 @@ std::vector<std::string> Backend::GetSensorNames() const
 std::vector<std::string> Backend::GetActionNames() const
 {
     std::vector<std::string> names;
-    for(Actions::eType i = Actions::eType::MOVE_X; i < Actions::eType::NUM_ACTIONS; i = static_cast<Actions::eType>((size_t)i + 1))
+    for(Actions::eType i = Actions::eType::SET_OSCILLATOR_PERIOD; i < Actions::eType::NUM_ACTIONS; i = static_cast<Actions::eType>((size_t)i + 1))
     {
         names.push_back(SensorsActions::actionName(i) + " (" + SensorsActions::actionShortName(i) + ")");
     }
@@ -353,6 +360,12 @@ std::vector<std::string> Backend::GetActionNames() const
 std::pair<unsigned, std::vector<unsigned> > Backend::GetSurvivors() const
 {
     return m_xAnalytics->GetSurvivors();
+}
+
+//---------------------------------------------------------------------------
+std::pair<unsigned, std::vector<unsigned> > Backend::GetSurvivorsToNextGen() const
+{
+    return m_xAnalytics->GetSurvivorsNextGen();
 }
 
 //---------------------------------------------------------------------------
@@ -380,3 +393,15 @@ void Backend::ClearAnalyticsProcessedCount()
     m_xAnalytics->ClearProcessedCounts();
     m_xSysStateMachine->UpdateParameterAction(SysStateMachine::eParameterActions::FinishAction);
 };
+
+//---------------------------------------------------------------------------
+std::pair<unsigned, std::vector<std::vector<unsigned> > > Backend::GetCompletedChallengeTaskCounts() const
+{
+    return m_xAnalytics->GetCompletedChallengeTaskCounts();
+}
+
+//---------------------------------------------------------------------------
+std::pair<unsigned, std::vector<float> > Backend::GetAvgAges() const
+{
+    return m_xAnalytics->GetAvgAges();
+}

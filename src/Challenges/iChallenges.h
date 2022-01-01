@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+class Analytics;
 class Grid;
 class Parameters;
 class Peep;
@@ -85,6 +86,7 @@ private:
 iChallenge* CreateChallenge(
     eChallenges challenge,
     RandomUintGenerator& random,
+    Analytics& analytics,
     const Parameters& params);
 
 //! Returns all challenge names.

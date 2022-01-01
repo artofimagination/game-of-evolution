@@ -80,6 +80,9 @@ public:
     {
         Survivors,
         GeneticDiversity,
+        CompletedTasks,
+        AvgAge,
+        SurvivorToNextGen,
         NoOfAnalytics
     };
     Q_ENUM(Value)

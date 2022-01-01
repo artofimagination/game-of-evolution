@@ -58,6 +58,7 @@ std::vector<std::pair<uint16_t, float> >& iChallenge::EvaluateWhenNewGeneration(
 iChallenge* CreateChallenge(
     eChallenges challenge,
     RandomUintGenerator& random,
+    Analytics& analytics,
     const Parameters& params)
 {
     switch(challenge) {
@@ -140,7 +141,7 @@ iChallenge* CreateChallenge(
             return new Altruism(random, params);
         // Increasing survival chances with getting in more circles in a predetermined order.
         case eChallenges::CircularSequence:
-            return new CircularSequence(params);
+            return new CircularSequence(params, analytics);
         default:
             assert(false);
             return new Altruism(random, params);

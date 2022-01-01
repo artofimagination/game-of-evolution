@@ -56,6 +56,9 @@ public:
         Challenges::iChallenge* pChallenge,
         uint8_t sensorTypeCount,
         uint8_t actionTypeCount);
+
+    //! Returns the oldest age in the generation.
+    unsigned GetOldestAge() const { return m_OldestAge; }
 private:
     // Returns by value a single genome with random genes.
     Genetics::Genome makeRandomGenome();
@@ -66,7 +69,7 @@ private:
     //! layers, then create a new population in the peeps container with random
     //! locations and genomes derived from the container of parent genomes.
     void initializeNewGeneration(
-        const std::vector<Genetics::Genome> &parentGenomes,
+        const std::vector<Genetics::Genome>& parentGenomes,
         eBarrierType barrierType,
         unsigned generation,
         uint8_t sensorTypeCount,
@@ -89,4 +92,5 @@ private:
     RandomUintGenerator&                                m_Random;
     const eBarrierType&                                 m_BarrierType;
     std::vector<std::unique_ptr<Barriers::iBarrier> >&  m_Barriers;
+    unsigned                                            m_OldestAge{0};         ///< Stores the oldest age.
 };

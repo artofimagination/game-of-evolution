@@ -56,6 +56,7 @@ void GenerationGenerator::initializeGeneration0(
     for (uint16_t index = 1; index <= m_Params.population; ++index) {
         m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), makeRandomGenome(), m_Random, sensorTypeCount, actionTypeCount, m_Grid);
     }
+    m_OldestAge = 0;
 }
 
 //-------------------------------------------------------------------------
@@ -163,7 +164,10 @@ void GenerationGenerator::initializeNewGeneration(
 
     // Spawn the population. This overwrites all the elements of peeps[]
     for (uint16_t index = 1; index <= m_Params.population; ++index) {
-        m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), generateChildGenome(parentGenomes), m_Random, sensorTypeCount, actionTypeCount, m_Grid);
+        if (m_PeepsPool[index].survivedToNextGen)
+            m_PeepsPool[index].relocate(m_Grid.findEmptyLocation(), m_Random, m_Grid);
+        else
+            m_PeepsPool[index].initialize(index, m_Grid.findEmptyLocation(), generateChildGenome(parentGenomes), m_Random, sensorTypeCount, actionTypeCount, m_Grid);
     }
 }
 
@@ -194,14 +198,24 @@ unsigned GenerationGenerator::spawnNewGeneration(
             return parent1.second > parent2.second;
         });
 
+    unsigned ageAccumulator = 0;
+    unsigned survivorsToNextGenCount = 0;
     // Assemble a list of all the parent genomes. These will be ordered by their
     // scores if the parents[] container was sorted by score.
     parentGenomes.reserve(parents.size());
     for (const std::pair<uint16_t, float> &parent : parents) {
+        ageAccumulator += m_PeepsPool[parent.first].age;
+        if (m_OldestAge < m_PeepsPool[parent.first].age)
+            m_OldestAge = m_PeepsPool[parent.first].age;
+        m_PeepsPool[parent.first].survivedToNextGen = m_PeepsPool[parent.first].alive && AlgorithmHelpers::prob2bool(parent.second / 1.5, m_Random);
+        if (m_PeepsPool[parent.first].survivedToNextGen)
+            survivorsToNextGenCount++;
         parentGenomes.push_back(m_PeepsPool[parent.first].genome);
     }
 
+    m_Analytics.AddAvgAge(ageAccumulator / parents.size());
     m_Analytics.AddSurvivorCount(parentGenomes.size());
+    m_Analytics.AddSurvivorNextGenCount(survivorsToNextGenCount);
     m_Analytics.AddGenDiveristyCount(Genetics::geneticDiversity(m_PeepsPool, m_Random, m_Params));
 
     appendEpochLog(generation, parentGenomes.size(), murderCount);

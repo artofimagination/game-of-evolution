@@ -82,7 +82,10 @@ public:
     Q_INVOKABLE void UpdateSensorsActions(const QVariantList& sensors, const QVariantList& actions);
     Q_INVOKABLE QVariantList GetChallengeNames() const;
     Q_INVOKABLE QVariantList GetSurvivors() const;
+    Q_INVOKABLE QVariantList GetSurvivorsToNextGen() const;
+    Q_INVOKABLE QVariantList GetAvgAges() const;
     Q_INVOKABLE QVariantList GetGeneticDiversity() const;
+    Q_INVOKABLE QVariantList GetCompletedChallengeTaskCounts() const;
     Q_INVOKABLE QVariantList GetAnalyticsNames() const;
     Q_INVOKABLE void ClearAnalyticsProcessedCount();
     ///////////////////////////////////////////////////////////////////////////////

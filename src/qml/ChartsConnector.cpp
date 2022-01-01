@@ -4,8 +4,6 @@
 
 #include <QThread>
 
-#include <iostream>
-
 QT_CHARTS_USE_NAMESPACE
 
 namespace QML
@@ -88,7 +86,6 @@ void ChartsConnector::UpdateHistory(const QVariantList& newData)
         // It is preferable to send smaller set of data, in order to reduce the length of this loop.
         for(int dataIndex = 0; dataIndex < lineGraph.size(); ++dataIndex)
         {
-            std::cout << lineGraph.at(dataIndex).toPointF().y() << " " << lineGraph.at(dataIndex).toPointF().x()  << std::endl;
             auto x = lineGraph.at(dataIndex).toPointF().x();
             auto y = lineGraph.at(dataIndex).toPointF().y();
             if (x < m_MinX)
@@ -111,7 +108,7 @@ void ChartsConnector::UpdateHistory(const QVariantList& newData)
             {
                 m_MaxY1 = y;
             }
-            m_MinMargin = m_MaxY1 - m_MinY1;
+            m_MinMargin = (m_MaxY1 - m_MinY1) / 2.0;
             m_MaxMargin = m_MinMargin;
             it->append(lineGraph.at(dataIndex).toPointF());
         }

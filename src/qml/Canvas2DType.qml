@@ -49,7 +49,7 @@ Item {
             var position = peepsPositions[i]
             // Left and top side the peeps are cut in half, the radius offset fixing this.
             position.x = position.x * scaling + radius
-            position.y = position.y * scaling + radius
+            position.y = height - (position.y * scaling + radius)
             shapes.push(peep.createObject(mainview, {"position": position, "fillColor": peepsColors[i], "radius": radius}))
         }
     }
@@ -57,9 +57,9 @@ Item {
     //! Creates rectangular challenge element.
     function createRectChallengeItem(rectangle, color) {
         rectangle.x = rectangle.x * scaling
-        rectangle.y = rectangle.y * scaling
+        rectangle.y = height - (rectangle.y * scaling)
         rectangle.width = rectangle.width * scaling
-        rectangle.height = rectangle.height * scaling
+        rectangle.height = -rectangle.height * scaling
         challengeShapes.push(rect.createObject(mainview, {"rect": rectangle, "fillColor": color}))
     }
 
@@ -86,7 +86,7 @@ Item {
     //! Creates a circular challaenge element.
     function createCircleChallengeItem(center, color, radius) {
         center.x = center.x * scaling + peepsOffset
-        center.y = center.y * scaling + peepsOffset
+        center.y = height - (center.y * scaling + peepsOffset)
         radius = radius * scaling
         challengeShapes.push(circle.createObject(mainview, {"position": center, "fillColor": color, "radius": radius}))
     }
@@ -94,7 +94,7 @@ Item {
     //! Creates rectangular barrier element.
     function createRectBarrierItem(rectangle, color) {
         rectangle.x = rectangle.x * scaling
-        rectangle.y = rectangle.y * scaling
+        rectangle.y = height - (rectangle.y * scaling)
         rectangle.width = rectangle.width * scaling
         rectangle.height = rectangle.height * scaling
         barrierShapes.push(rect.createObject(mainview, {"rect": rectangle, "fillColor": color}))
@@ -103,7 +103,7 @@ Item {
     //! Creates a circle barrier element.
     function createCircleBarrierItem(center, color, radius) {
         center.x = center.x * scaling + peepsOffset
-        center.y = center.y * scaling + peepsOffset
+        center.y = height - (center.y * scaling + peepsOffset)
         radius = radius * scaling
         barrierShapes.push(circle.createObject(mainview, {"position": center, "fillColor": color, "radius": radius}))
     }
