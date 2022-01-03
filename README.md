@@ -9,10 +9,13 @@
 This is a fork from the great repository of [biosim4](https://github.com/davidrmiller/biosim4)<br>
 Main branch of this repo is _game_of_evolution_. _main_ is the maintenance branch to grab upstream changes from the original biosim4 repo.<br><br>
 
+DEV IS ON HOLD FOR A WHILE.
+
 This repo has a major overhaul of the code into a new structure. The core logic has not been changed and will be kept in original-biosim4-core branch, for the keen users, who wants to have the same behavior as the original biosim4 repo, but with a UI interface.<br>
 TODO:
   - Video generation feature is not yet migrated and is not working at the moment
   - There is no logging migrated yet, so it is not functional either
+  - Fix system state machine
 
 Current look of the UI
 ![doc1](https://github.com/artofimagination/game-of-evolution/blob/game_of_evolution/resources/DocImg1.png)
