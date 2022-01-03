@@ -22,7 +22,6 @@ void ChartsConnector::RemoveAllSeries()
 {
     QMutexLocker locker(m_pMutex);
     m_Data.clear();
-    m_Index = 0;
     for (auto& series : m_SeriesPtrMap)
     {
         auto axes = static_cast<QXYSeries*>(series.second)->attachedAxes();
@@ -54,22 +53,22 @@ void ChartsConnector::UpdateSeries()
     {
         QMutexLocker locker(m_pMutex);
         assert(static_cast<int>(m_SeriesPtrMap.size()) == m_Data.size());
-
-        if (m_SeriesPtrMap.empty() == false && m_Data.isEmpty() == false)
+        int graphIndex = 0;
+        for (auto it = m_Data.begin(); it != m_Data.end(); ++it)
         {
-            m_Index++;
-            if (m_Index > m_Data.size() - 1)
-                m_Index = 0;
-
-            QVector<QPointF> points = m_Data.at(m_Index);
-            // Use replace instead of clear + append, it's optimized for performance
-            auto pSeries = static_cast<QXYSeries*>(m_SeriesPtrMap[m_Index]);
-            pSeries->replace(points);
-            auto axes = pSeries->attachedAxes();
-            axes[0]->setMin(m_MinX);
-            axes[0]->setMax(m_MaxX);
-            axes[1]->setMin(m_MinY1 - m_MinMargin);
-            axes[1]->setMax(m_MaxY1 + m_MaxMargin);
+            //if (m_SeriesPtrMap.empty() == false && m_Data.isEmpty() == false)
+            {
+                QVector<QPointF> points = *it;
+                // Use replace instead of clear + append, it's optimized for performance
+                auto pSeries = static_cast<QXYSeries*>(m_SeriesPtrMap[graphIndex]);
+                pSeries->replace(points);
+                auto axes = pSeries->attachedAxes();
+                axes[0]->setMin(m_MinX);
+                axes[0]->setMax(m_MaxX);
+                axes[1]->setMin(m_MinY1 - m_MinMargin);
+                axes[1]->setMax(m_MaxY1 + m_MaxMargin);
+                graphIndex++;
+            }
         }
     }
     emit ValueChanged();

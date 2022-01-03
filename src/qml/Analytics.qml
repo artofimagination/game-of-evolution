@@ -115,7 +115,7 @@ Item {
                 //! Refresh timer to control the polling of new data. Frequency depends on the analytics type.
                 Timer {
                     id: refreshTimer
-                    interval: 1 / 5 * 1000 // 5 Hz
+                    interval: 2 * 1000 // 0.5 Hz
                     running: false
                     repeat: true
                     onTriggered: {
@@ -186,6 +186,7 @@ Item {
                           default:
                               break;
                       }
+                      disableChartCheckBox.checked = false
                       selectAnalytics(analyticsTypes.currentIndex)
                   }
               }

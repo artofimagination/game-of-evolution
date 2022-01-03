@@ -44,6 +44,7 @@ std::string sensorName(Sensors::eType sensor)
     case Sensors::eType::PlannedLocY: return "planned loc y diff"; break;
     case Sensors::eType::PlannedLocTime: return "planned time diff"; break;
     case Sensors::eType::ChallengeSuccess: return "challenge success"; break;
+    case Sensors::eType::FoundChallengeArea: return "found a challenge area"; break;
     default: assert(false); break;
     }
 }
@@ -77,6 +78,7 @@ std::string sensorShortName(Sensors::eType sensor)
     case Sensors::eType::PlannedLocY: return "PYd"; break;
     case Sensors::eType::PlannedLocTime: return "Ptd"; break;
     case Sensors::eType::ChallengeSuccess: return "ChS"; break;
+    case Sensors::eType::FoundChallengeArea: return "Fca"; break;
     default: assert(false); break;
     }
 }
@@ -239,7 +241,7 @@ float Sensors::getSensor(
     case eType::AGE:
         // Converts age (units of simSteps compared to life expectancy)
         // linearly to normalized sensor range 0.0..1.0
-        sensorVal = (float)peep.age / oldestAge == 0 ? params.stepsPerGeneration : oldestAge;
+        sensorVal = (float)peep.age / ((oldestAge == 0) ? params.stepsPerGeneration : (oldestAge + params.stepsPerGeneration));
         break;
     case eType::BOUNDARY_DIST:
     {
@@ -258,7 +260,7 @@ float Sensors::getSensor(
         // Measures the distance to nearest boundary in the east-west axis,
         // max distance is half the grid width; scaled to sensor range 0.0..1.0.
         int minDistX = std::min<int>(peep.loc.x, (params.sizeX - peep.loc.x) - 1);
-        sensorVal = minDistX / (params.sizeX / 2.0);
+        sensorVal = -(minDistX / (params.sizeX / 2.0));
         break;
     }
     case eType::BOUNDARY_DIST_Y:
@@ -266,7 +268,7 @@ float Sensors::getSensor(
         // Measures the distance to nearest boundary in the south-north axis,
         // max distance is half the grid height; scaled to sensor range 0.0..1.0.
         int minDistY = std::min<int>(peep.loc.y, (params.sizeY - peep.loc.y) - 1);
-        sensorVal = minDistY / (params.sizeY / 2.0);
+        sensorVal = -(minDistY / (params.sizeY / 2.0));
         break;
     }
     case eType::LAST_MOVE_DIR_X:
@@ -411,8 +413,24 @@ float Sensors::getSensor(
     {
         // Gets the number of completed challenge tasks and normalizes to 0..1.0.
         // It simulates success feeling.
-        auto maxNumberOfBits = 8;
-        sensorVal = peep.challengeBits / static_cast<float>(maxNumberOfBits);
+        unsigned maxNumberOfBits = 8;
+        auto bits = peep.challengeBits;
+        auto count = 0;
+        for (unsigned n = 0; n < maxNumberOfBits; ++n) {
+            if ((bits & (1 << n)) == 0) {
+                break;
+            }
+            count++;
+        }
+        sensorVal = count / static_cast<float>(maxNumberOfBits);
+        break;
+    }
+    case eType::FoundChallengeArea:
+    {
+        auto bits = peep.challengeBits;
+        auto randomVal = (bits & (1 << 8)) == 0 ? 0.0 : 1.0;
+        // Senses whether the peep is in an challenge area or not.
+        sensorVal = randomVal / static_cast<float>(UINT_MAX);
         break;
     }
     default:
@@ -420,12 +438,7 @@ float Sensors::getSensor(
         break;
     }
 
-    if (std::isnan(sensorVal) || sensorVal < -0.01 || sensorVal > 1.01) {
-        //std::cout << "sensorVal=" << (int)sensorVal << " for " << SensorsActions::sensorName((eType)sensorType) << std::endl;
-        sensorVal = std::max(0.0f, std::min(sensorVal, 1.0f)); // clip
-    }
-
-    assert(!std::isnan(sensorVal) && sensorVal >= -0.01 && sensorVal <= 1.01);
+    assert(!std::isnan(sensorVal) && sensorVal >= -1.0 && sensorVal <= 1.0);
 
     return sensorVal;
 }
@@ -461,14 +474,17 @@ void Actions::executeActions(Peep &peep, unsigned simStep, std::array<float, eTy
     float level = 0.0;
     unsigned movementActionTypeCount = 0;
 
-    // Check all the action listed in the available types. 
-    // The list can be modified from outside the backend (i.e UI)
     for (size_t i = 0; i < m_AvailableTypes.size(); ++i)
     {   
         if (m_AvailableTypes[i] >= static_cast<unsigned>(Actions::eType::MOVE_NORTH) && 
             m_AvailableTypes[i] != static_cast<unsigned>(Actions::eType::NUM_ACTIONS))
             movementActionTypeCount++;
+    }
 
+    // Check all the action listed in the available types. 
+    // The list can be modified from outside the backend (i.e UI)
+    for (size_t i = 0; i < m_AvailableTypes.size(); ++i)
+    {   
         // actionLevels index is representing the index of the type in m_AvailableTypes.
         const auto& type = m_AvailableTypes[i];
         level = actionLevels[i];
@@ -586,37 +602,37 @@ void Actions::executeActions(Peep &peep, unsigned simStep, std::array<float, eTy
             //     X, Y == -1, 0 after applying the sign and probability
             //     The agent will then be moved West (an offset of -1, 0) if it's a legal move.
             case Actions::eType::MOVE_EAST:
-                moveX += (std::tanh(level) + 1.0) / 2.0;
+                moveX += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_WEST:
-                moveX -= (std::tanh(level) + 1.0) / 2.0;
+                moveX -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_NORTH:
-                moveY += (std::tanh(level) + 1.0) / 2.0;
+                moveY += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_SOUTH:
-                moveY -= (std::tanh(level) + 1.0) / 2.0;
+                moveY -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_NE:
-                moveX += (std::tanh(level) + 1.0) / 2.0;
-                moveY += (std::tanh(level) + 1.0) / 2.0;
+                moveX += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
+                moveY += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_SE:
-                moveX += (std::tanh(level) + 1.0) / 2.0;
-                moveY -= (std::tanh(level) + 1.0) / 2.0;
+                moveX += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
+                moveY -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_SW:
-                moveX -= (std::tanh(level) + 1.0) / 2.0;
-                moveY -= (std::tanh(level) + 1.0) / 2.0;
+                moveX -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
+                moveY -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_NW:
-                moveX -= (std::tanh(level) + 1.0) / 2.0;
-                moveY += (std::tanh(level) + 1.0) / 2.0;
+                moveX -= (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
+                moveY += (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             case Actions::eType::MOVE_RANDOM:
                 offset = Dir::random8(m_Random).asNormalizedCoord();
-                moveX += offset.x * (std::tanh(level) + 1.0) / 2.0;
-                moveY += offset.y * (std::tanh(level) + 1.0) / 2.0;
+                moveX += offset.x * (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
+                moveY += offset.y * (std::tanh(level) + 1.0) / (2.0 * movementActionTypeCount);
                 break;
             default:
               break;
@@ -625,8 +641,6 @@ void Actions::executeActions(Peep &peep, unsigned simStep, std::array<float, eTy
 
     // Convert the accumulated X, Y sums to the range -1.0..1.0 and scale by the
     // peep's responsiveness (0.0..1.0) (adjusted by a curve)y
-    moveX /= movementActionTypeCount;
-    moveY /= movementActionTypeCount;
     moveX *= responsivenessAdjusted;
     moveY *= responsivenessAdjusted;
 

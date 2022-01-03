@@ -48,6 +48,7 @@ public:
         PlannedLocY,        // I reads the difference between current and planned loc y
         PlannedLocTime,     // I reads the difference between the current and planned sim step
         ChallengeSuccess,   // I reads the completed challenge tasks.
+        FoundChallengeArea, // I reads whether it is in a challenge area.
         NUM_SENSES,         // <<------------------ END OF ACTIVE SENSES MARKER
     };
 

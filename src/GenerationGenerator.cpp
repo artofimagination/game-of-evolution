@@ -213,7 +213,7 @@ unsigned GenerationGenerator::spawnNewGeneration(
         parentGenomes.push_back(m_PeepsPool[parent.first].genome);
     }
 
-    m_Analytics.AddAvgAge(ageAccumulator / parents.size());
+    m_Analytics.AddAvgAge(parents.size() > 0 ? ageAccumulator / parents.size() : 0.0);
     m_Analytics.AddSurvivorCount(parentGenomes.size());
     m_Analytics.AddSurvivorNextGenCount(survivorsToNextGenCount);
     m_Analytics.AddGenDiveristyCount(Genetics::geneticDiversity(m_PeepsPool, m_Random, m_Params));

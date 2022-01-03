@@ -75,7 +75,6 @@ signals:
 private:
     QMutex*                             m_pMutex{ new QMutex() };
     QList<QVector<QPointF> >            m_Data{};                                       ///< Data history container.
-    int                                 m_Index{};                                      ///< Series update index.
     std::map<int, QAbstractSeries*>     m_SeriesPtrMap{};                               ///< Series index pointer map.
 
     double                              m_MinMargin{ 200.0 };                           ///< Margin on the bottom of the graph 

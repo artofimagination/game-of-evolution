@@ -89,18 +89,26 @@ void CircularSequence::EvaluateAtEndOfSimStep(
 {
     for (uint16_t index = 1; index <= params.population; ++index) { // index 0 is reserved
         Peep &peep = peeps[index];
+        auto inAnyChallengeCircle = false;
         for (unsigned n = 0; n < m_Setup.centers.size(); ++n) {
             unsigned previousBitSet = (n == 0 ? 1 : peep.challengeBits & (1 << (n - 1)));
             unsigned bit = 1 << n;
             Coord offset = m_Setup.centers[n] - peep.loc;
             float distance = offset.length();
-            if (previousBitSet && (peep.challengeBits & bit) == 0) {
-                if (distance <= m_Setup.radius) {
+            if (distance <= m_Setup.radius) {
+                // mark on the 9th bit whether the peep is in any challenge zone.
+                peep.challengeBits |= 1 << 8;
+                inAnyChallengeCircle = true;
+                // Set the challenge task bit if it has been completed in order.
+                if (previousBitSet && (peep.challengeBits & bit) == 0) {
                     peep.challengeBits |= bit;
                 }
                 break;
             }
         }
+        // Not in any challenge zones
+        if (!inAnyChallengeCircle)
+            peep.challengeBits &= ~(1 << 8);
     }
 }
 
